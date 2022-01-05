@@ -19,7 +19,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/elastos/Elastos.ELA.Coinbase.API/server/services"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/server/services"
 
 	"github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/server"
