@@ -6,6 +6,13 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
+var MainnetNetworkIndex int64 = 0
+var MainnetStatus = "Success"
+
+const MainnetNextworkType = "Transfer"
+const MainnetCurrencySymbol = "ELA"
+const MainnetCurrencyDecimal int32 = 8
+
 type ProgramInfo struct {
 	Code      string
 	Parameter string
@@ -94,25 +101,6 @@ type CoinbaseInfo struct {
 	CoinbaseData string
 }
 
-type RechargeToSideChainInfoV0 struct {
-	Proof                string
-	MainChainTransaction string
-}
-
-type RechargeToSideChainInfoV1 struct {
-	MainChainTransactionHash string `json:"mainchaintxhash"`
-}
-
-type CrossChainAssetInfo struct {
-	CrossChainAddress string `json:"crosschainaddress"`
-	OutputIndex       uint64 `json:"outputindex"`
-	CrossChainAmount  string `json:"crosschainamount"`
-}
-
-type TransferCrossChainAssetInfo struct {
-	CrossChainAssets []CrossChainAssetInfo `json:"crosschainassets"`
-}
-
 type TransferAssetInfo struct {
 }
 
@@ -124,19 +112,4 @@ type UTXOInfo struct {
 	Amount        string `json:"amount"`
 	Confirmations uint32 `json:"confirmations"`
 	OutputLock    uint32 `json:"OutputLock"`
-}
-
-type WithdrawOutputInfo struct {
-	CrossChainAddress string `json:"crosschainaddress"`
-	CrossChainAmount  string `json:"crosschainamount"`
-	OutputAmount      string `json:"outputamount"`
-	TargetData        string `json:"targetdata"`
-}
-
-type SidechainIllegalDataInfo struct {
-	IllegalType     uint8  `json:"illegaltype"`
-	Height          uint32 `json:"height"`
-	IllegalSigner   string `json:"illegalsigner"`
-	Evidence        string `json:"evidence"`
-	CompareEvidence string `json:"compareevidence"`
 }

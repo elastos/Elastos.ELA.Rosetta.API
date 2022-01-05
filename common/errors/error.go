@@ -19,18 +19,48 @@ import "github.com/coinbase/rosetta-sdk-go/types"
 const (
 	DefaultError int32 = iota
 	TransactionNotExistError
+	ReferTransactionNotExistError
 	BlockNotExistError
+	DecodeAddressError
+	EncodeToAddressError
 )
 
-var APIErrorMap = []*types.Error{
-	{
+var (
+	TransactionNotExist = &types.Error{
 		Code:      TransactionNotExistError,
 		Message:   "failed to get transaction by rpc",
 		Retriable: false,
-	},
-	{
+	}
+
+	ReferTransactionNotExist = &types.Error{
+		Code:      ReferTransactionNotExistError,
+		Message:   "failed to get transaction reference by rpc",
+		Retriable: false,
+	}
+
+	BlockNotExist = &types.Error{
 		Code:      BlockNotExistError,
 		Message:   "failed to get block by rpc",
 		Retriable: false,
-	},
+	}
+
+	DecodeAddress = &types.Error{
+		Code:      DecodeAddressError,
+		Message:   "failed to decode address",
+		Retriable: false,
+	}
+
+	EncodeToAddress = &types.Error{
+		Code:      EncodeToAddressError,
+		Message:   "failed to encode to address",
+		Retriable: false,
+	}
+)
+
+var APIErrorMap = []*types.Error{
+	TransactionNotExist,
+	ReferTransactionNotExist,
+	BlockNotExist,
+	DecodeAddress,
+	EncodeToAddress,
 }
