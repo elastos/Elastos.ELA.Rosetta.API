@@ -16,6 +16,7 @@ package services
 
 import (
 	"context"
+
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
@@ -73,10 +74,11 @@ func (s *NetworkAPIService) NetworkOptions(
 	ctx context.Context,
 	request *types.NetworkRequest,
 ) (*types.NetworkOptionsResponse, *types.Error) {
+	// TODO: fix NodeVersion after node rpc provide version API
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
-			RosettaVersion: "1.4.0",
-			NodeVersion:    "0.0.1",
+			RosettaVersion: "1.4.10",
+			NodeVersion:    "0.8.2",
 		},
 		Allow: &types.Allow{
 			OperationStatuses: []*types.OperationStatus{
@@ -91,9 +93,12 @@ func (s *NetworkAPIService) NetworkOptions(
 			},
 			OperationTypes: []string{
 				"Transfer",
-				"Reward",
 			},
-			Errors: errors.APIErrorMap,
+			Errors:                  errors.APIErrorMap,
+			HistoricalBalanceLookup: false,
+			CallMethods:             []string{},
+			BalanceExemptions:       []*types.BalanceExemption{},
+			MempoolCoins:            true,
 		},
 	}, nil
 }
