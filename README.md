@@ -1,4 +1,4 @@
-Elastos ELA Coinbase API
+Elastos ELA Rosetta API
 ===========
 [![GoDoc](https://godoc.org/github.com/elastos/Elastos.ELA.Coinbase.API?status.svg)](https://github.com/coinbase/rosetta-sdk-go) [![Build Status](https://travis-ci.com/elastos/Elastos.ELA.Coinbase.API.svg?branch=release_v0.0.1)](https://travis-ci.com/elastos/Elastos.ELA.Coinbase.API) [![Go Report Card](https://goreportcard.com/badge/github.com/elastos/Elastos.ELA.Coinbase.API)](https://goreportcard.com/report/github.com/elastos/Elastos.ELA.Coinbase.API) [![License](https://badges.fyi/github/license/elastos/Elastos.ELA.Coinbase.API)](https://github.com/elastos/Elastos.ELA.Coinbase.API/blob/master/LICENSE) [![Latest tag](https://badges.fyi/github/latest-tag/elastos/Elastos.ELA.Coinbase.API)](https://github.com/elastos/Elastos.ELA.Coinbase.API/releases)
 ## Introduction
@@ -75,13 +75,13 @@ make all
  ```
 2.Run server
 ```shell script
-./cb-server
+./rs-server
 ```
 3.Run client
 ```shell script
-./cb-client
+./rs-client
 ```
 4.Run fetcher
 ```shell script
-./cb-fetcher
+./rs-fetcher
 ```
