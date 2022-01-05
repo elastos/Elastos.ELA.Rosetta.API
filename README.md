@@ -58,10 +58,10 @@ $ source ~/.profile
 ### 3. Clone source code
 Make sure you are in the working folder.
 ```bash
-$ git clone https://github.com/elastos/Elastos.ELA.Coinbase.API.git
+$ git clone https://github.com/elastos/Elastos.ELA.Rosetta.API.git
 ```
 
-If clone works successfully, you should see folder structure like Elastos.ELA.Coinbase.API/Makefile
+If clone works successfully, you should see folder structure like Elastos.ELA.Rosetta.API/Makefile
 
 ### 4. Run directly
 1. Run `make runserver`
