@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 
-	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
@@ -36,6 +36,28 @@ type Error struct {
 type ArbitratorGroupInfo struct {
 	OnDutyArbitratorIndex int
 	Arbitrators           []string
+}
+
+func GetTransactionByHash(hash string, config *config.RpcConfig) (*types.Transaction, error) {
+	resp, err := CallAndUnmarshalResponse("gettransaction", Param("hash", hash),
+		config)
+	if err != nil {
+		return nil, errors.New("[gettransaction] unable to call rpc " + err.Error())
+	}
+	rawTx, ok := resp.Result.(string)
+	if !ok {
+		return nil, errors.New("[gettransaction] rpc result not correct ")
+	}
+	buf, err := hex.DecodeString(rawTx)
+	if err != nil {
+		return nil, errors.New("[gettransaction] invalid data from" + err.Error())
+	}
+	var txn types.Transaction
+	err = txn.Deserialize(bytes.NewReader(buf))
+	if err != nil {
+		return nil, errors.New("[gettransaction] decode transaction error " + err.Error())
+	}
+	return &txn, nil
 }
 
 func GetCurrentHeight(config *config.RpcConfig) (uint32, error) {
@@ -79,43 +101,6 @@ func GetBlockByHash(hash *common.Uint256, config *config.RpcConfig) (*base.Block
 	}
 
 	return block, nil
-}
-
-func GetTransactionInfoByHash(transactionHash string, config *config.RpcConfig) (*base.WithdrawTxInfo, error) {
-	hashBytes, err := common.HexStringToBytes(transactionHash)
-	if err != nil {
-		return nil, err
-	}
-	reversedHashBytes := common.BytesReverse(hashBytes)
-	reversedHashStr := common.BytesToHexString(reversedHashBytes)
-
-	result, err := CallAndUnmarshal("getwithdrawtransaction", Param("txid", reversedHashStr), config)
-	if err != nil {
-		return nil, err
-	}
-
-	tx := &base.WithdrawTxInfo{}
-	if err := Unmarshal(&result, tx); err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-func GetWithdrawUTXOsByAmount(genesisAddress string, amount common.Fixed64, config *config.RpcConfig) ([]base.UTXOInfo, error) {
-	parameter := make(map[string]interface{})
-	parameter["address"] = genesisAddress
-	parameter["amount"] = amount.String()
-	result, err := CallAndUnmarshal("getutxosbyamount", parameter, config)
-	if err != nil {
-		return nil, err
-	}
-
-	var utxoInfos []base.UTXOInfo
-	if err := Unmarshal(&result, &utxoInfos); err != nil {
-		return nil, err
-	}
-
-	return utxoInfos, nil
 }
 
 func GetReferenceAddress(txid string, index int, config *config.RpcConfig) (string, error) {

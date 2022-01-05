@@ -133,11 +133,6 @@ type WithdrawOutputInfo struct {
 	TargetData        string `json:"targetdata"`
 }
 
-type WithdrawTxInfo struct {
-	TxID             string                `json:"txid"`
-	CrossChainAssets []*WithdrawOutputInfo `json:"crosschainassets"`
-}
-
 type SidechainIllegalDataInfo struct {
 	IllegalType     uint8  `json:"illegaltype"`
 	Height          uint32 `json:"height"`
