@@ -153,18 +153,36 @@ func (s *BlockAPIService) BlockTransaction(
 	request *types.BlockTransactionRequest,
 ) (*types.BlockTransactionResponse, *types.Error) {
 
-	tx, err := rpc.GetTransactionInfoByHash(request.TransactionIdentifier.Hash, config.Parameters.MainNode.Rpc)
+	tx, err := rpc.GetTransactionByHash(request.TransactionIdentifier.Hash, config.Parameters.MainNode.Rpc)
 	if err != nil {
 		errStr := err.Error()
+		description := "/block/transaction rpc error"
 		return nil, &types.Error{
 			Code:        0,
-			Message:     "",
-			Description: &errStr,
+			Message:     errStr,
+			Description: &description,
 			Retriable:   false,
 			Details:     nil,
 		}
 	}
 	log.Printf("transactionk: %v\n", tx)
+
+	// create operations
+	//operations := make([]*types.Operation, 0)
+	//for _, input := range tx.Inputs {
+	//	tx, err := rpc.GetTransactionByHash(request.TransactionIdentifier.Hash, config.Parameters.MainNode.Rpc)
+	//	if err != nil {
+	//		errStr := err.Error()
+	//		return nil, &types.Error{
+	//			Code:        0,
+	//			Message:     "",
+	//			Description: &errStr,
+	//			Retriable:   false,
+	//			Details:     nil,
+	//		}
+	//	}
+	//}
+
 
 	return &types.BlockTransactionResponse{
 		Transaction: &types.Transaction{

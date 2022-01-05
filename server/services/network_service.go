@@ -18,6 +18,7 @@ import (
 	"context"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 )
 
 // NetworkAPIService implements the server.NetworkAPIServicer interface.
@@ -92,13 +93,7 @@ func (s *NetworkAPIService) NetworkOptions(
 				"Transfer",
 				"Reward",
 			},
-			Errors: []*types.Error{
-				{
-					Code:      1,
-					Message:   "not implemented",
-					Retriable: false,
-				},
-			},
+			Errors: errors.APIErrorMap,
 		},
 	}, nil
 }
