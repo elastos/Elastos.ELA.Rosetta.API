@@ -19,6 +19,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/server/services"
 
 	"github.com/coinbase/rosetta-sdk-go/asserter"
@@ -52,6 +53,7 @@ func NewBlockchainRouter(
 }
 
 func main() {
+	config.Initialize()
 	network := &types.NetworkIdentifier{
 		Blockchain: "Rosetta",
 		Network:    "Testnet",

@@ -20,6 +20,7 @@ import (
 
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 )
 
 const (
@@ -28,6 +29,7 @@ const (
 )
 
 func main() {
+	config.Initialize()
 	ctx := context.Background()
 
 	// Step 1: Create a new fetcher

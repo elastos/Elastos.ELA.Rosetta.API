@@ -16,7 +16,6 @@ package services
 
 import (
 	"context"
-
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
