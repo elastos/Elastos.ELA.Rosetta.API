@@ -55,8 +55,8 @@ func NewBlockchainRouter(
 func main() {
 	config.Initialize()
 	network := &types.NetworkIdentifier{
-		Blockchain: "Rosetta",
-		Network:    "Testnet",
+		Blockchain: "Elastos",
+		Network:    "Mainnet",
 	}
 
 	// The asserter automatically rejects incorrectly formatted
