@@ -1,4 +1,4 @@
-module github.com/elastos/Elastos.ELA.Coinbase.API
+module github.com/elastos/Elastos.ELA.Rosetta.API
 
 go 1.16
 
