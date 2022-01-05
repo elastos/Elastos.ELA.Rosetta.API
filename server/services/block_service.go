@@ -17,10 +17,13 @@ package services
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
 )
 
 // BlockAPIService implements the server.BlockAPIServicer interface.
@@ -45,6 +48,20 @@ func (s *BlockAPIService) Block(
 		if previousBlockIndex < 0 {
 			previousBlockIndex = 0
 		}
+
+		block, err := rpc.GetBlockByHeight(1000, config.Parameters.MainNode.Rpc)
+		if err != nil {
+			errStr := err.Error()
+			log.Printf("err: %s\n", errStr)
+			return nil, &types.Error{
+				Code:        12,
+				Message:     errStr,
+				Description: nil,
+				Retriable:   false,
+				Details:     nil,
+			}
+		}
+		log.Printf("block: %v\n", block)
 
 		return &types.BlockResponse{
 			Block: &types.Block{
@@ -135,6 +152,20 @@ func (s *BlockAPIService) BlockTransaction(
 	ctx context.Context,
 	request *types.BlockTransactionRequest,
 ) (*types.BlockTransactionResponse, *types.Error) {
+
+	tx, err := rpc.GetTransactionInfoByHash(request.TransactionIdentifier.Hash, config.Parameters.MainNode.Rpc)
+	if err != nil {
+		errStr := err.Error()
+		return nil, &types.Error{
+			Code:        0,
+			Message:     "",
+			Description: &errStr,
+			Retriable:   false,
+			Details:     nil,
+		}
+	}
+	log.Printf("transactionk: %v\n", tx)
+
 	return &types.BlockTransactionResponse{
 		Transaction: &types.Transaction{
 			TransactionIdentifier: &types.TransactionIdentifier{
