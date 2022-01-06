@@ -29,6 +29,8 @@ const (
 	EncodeToAddressError
 	UnsupportNetworkError
 	InvalidTransactionError
+	GetAddressBalanceError
+	GetUnspentUtxoError
 )
 
 var (
@@ -95,6 +97,17 @@ var (
 	InvalidTransaction = &types.Error{
 		Code:      InvalidTransactionError,
 		Message:   "invalid transaction data",
+		Retriable: false,
+	}
+
+	GetAddressBalanceFailed = &types.Error{
+		Code:      GetAddressBalanceError,
+		Message:   "failed to get address balance",
+		Retriable: false,
+	}
+	GetUnspentUtxoFailed = &types.Error{
+		Code:      GetUnspentUtxoError,
+		Message:   "failed to get address utxo",
 		Retriable: false,
 	}
 )
