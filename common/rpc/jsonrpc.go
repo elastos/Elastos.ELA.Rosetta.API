@@ -162,6 +162,7 @@ func GetUnspentUtxo(addresses []string, config *config.RpcConfig) ([]base.UTXOIn
 func GetNodeState(config *config.RpcConfig) (*servers.ServerInfo, error) {
 	result, err := CallAndUnmarshal("getnodestate", nil, config)
 	if err != nil {
+		log.Printf("getnodestate err: %s\n", err.Error())
 		return nil, err
 	}
 
@@ -176,6 +177,7 @@ func GetNodeState(config *config.RpcConfig) (*servers.ServerInfo, error) {
 func GetNeighbors(config *config.RpcConfig) ([]string, error) {
 	result, err := CallAndUnmarshal("getneighbors", nil, config)
 	if err != nil {
+		log.Printf("getneighbors err: %s\n", err.Error())
 		return []string{}, err
 	}
 
@@ -185,6 +187,41 @@ func GetNeighbors(config *config.RpcConfig) ([]string, error) {
 	}
 
 	return neighbors, nil
+}
+
+func GetMempool(config *config.RpcConfig) ([]string, error) {
+	result, err := CallAndUnmarshal("getrawmempool", nil, config)
+	if err != nil {
+		log.Printf("getrawmempool err: %s\n", err.Error())
+		return []string{}, err
+	}
+
+	var txHashes []string
+	if err := Unmarshal(&result, &txHashes); err != nil {
+		log.Printf("Unmarshal txHashes from mempool err: %s\n", err.Error())
+		return []string{}, err
+	}
+
+	return txHashes, nil
+}
+
+func GetMempoolAll(config *config.RpcConfig) ([]*servers.TransactionContextInfo, error) {
+	parameter := make(map[string]interface{})
+	parameter["state"] = "all"
+
+	result, err := CallAndUnmarshal("getrawmempool", parameter, config)
+	if err != nil {
+		log.Printf("getrawmempool all err: %s", err.Error())
+		return []*servers.TransactionContextInfo{}, err
+	}
+
+	var txContextInfo []*servers.TransactionContextInfo
+	if err := Unmarshal(&result, &txContextInfo); err != nil {
+		log.Printf("Unmarshal TransactionContextInfo from mempool err: %s\n", err.Error())
+		return []*servers.TransactionContextInfo{}, err
+	}
+
+	return txContextInfo, nil
 }
 
 func post(url string, contentType string, user string, pass string, body io.Reader) (resp *http.Response, err error) {

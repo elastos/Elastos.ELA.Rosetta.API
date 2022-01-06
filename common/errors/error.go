@@ -24,8 +24,10 @@ const (
 	BlockNotExistError
 	GetNeighborsError
 	GetNodeStateError
+	GetMempoolError
 	DecodeAddressError
 	EncodeToAddressError
+	UnsupportNetworkError
 )
 
 var (
@@ -65,6 +67,12 @@ var (
 		Retriable: false,
 	}
 
+	GetMempoolFailed = &types.Error{
+		Code:      GetMempoolError,
+		Message:   "failed to get mempool",
+		Retriable: false,
+	}
+
 	DecodeAddress = &types.Error{
 		Code:      DecodeAddressError,
 		Message:   "failed to decode address",
@@ -76,12 +84,23 @@ var (
 		Message:   "failed to encode to address",
 		Retriable: false,
 	}
+
+	UnsupportNetwork = &types.Error{
+		Code:      UnsupportNetworkError,
+		Message:   "unsupport network",
+		Retriable: false,
+	}
 )
 
 var APIErrorMap = []*types.Error{
 	TransactionNotExist,
 	ReferTransactionNotExist,
+	GetCurrentBlockFailed,
 	BlockNotExist,
+	GetNeighborsFailed,
+	GetNodeStateFailed,
+	GetMempoolFailed,
 	DecodeAddress,
 	EncodeToAddress,
+	UnsupportNetwork,
 }

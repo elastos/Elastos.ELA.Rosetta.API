@@ -19,6 +19,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/server/services"
 
@@ -45,20 +46,26 @@ func NewBlockchainRouter(
 		asserter,
 	)
 
-	return server.NewRouter(networkAPIController, blockAPIController)
+	mempoolAPIService := services.NewMempoolAPIService(network)
+	mempoolAPIController := server.NewMempoolAPIController(
+		mempoolAPIService,
+		asserter,
+	)
+
+	return server.NewRouter(networkAPIController, blockAPIController, mempoolAPIController)
 }
 
 func main() {
 	config.Initialize()
 	network := &types.NetworkIdentifier{
-		Blockchain: "Elastos",
-		Network:    "Mainnet",
+		Blockchain: base.BlockChainName,
+		Network:    config.Parameters.ActiveNet,
 	}
 
 	// The asserter automatically rejects incorrectly formatted
 	// requests.
 	asserter, err := asserter.NewServer(
-		[]string{"Transfer", "Reward"},
+		[]string{base.MainnetNextworkType},
 		false,
 		[]*types.NetworkIdentifier{network},
 		nil,

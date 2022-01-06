@@ -21,6 +21,14 @@ func GetCoinIdentifier(hash common.Uint256, index uint16) string {
 	return hash.String() + ":" + strconv.Itoa(int(index))
 }
 
+func NetworkCheck(network *types.NetworkIdentifier) bool {
+	if network.Blockchain == base.BlockChainName && network.Network == config.Parameters.ActiveNet {
+		return true
+	}
+
+	return false
+}
+
 func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
 	for i, input := range tx.Inputs {
