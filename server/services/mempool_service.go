@@ -79,11 +79,24 @@ func (s *MempoolAPIService) MempoolTransaction(
 		return nil, errors.UnsupportNetwork
 	}
 
-	//txContextInfo, err := rpc.GetMempoolAll(config.Parameters.MainNodeRPC)
-	//if err != nil {
-	//	log.Printf("GetMempoolAll err: %s\n", err.Error())
-	//	return nil, errors.GetMempoolFailed
-	//}
+	txContextInfo, err := rpc.GetMempoolAll(config.Parameters.MainNodeRPC)
+	if err != nil {
+		log.Printf("GetMempoolAll err: %s\n", err.Error())
+		return nil, errors.GetMempoolFailed
+	}
+
+	for _, tx := range txContextInfo {
+		if tx.Hash == request.TransactionIdentifier.Hash {
+			rstx, e := GetRosettaTransactionByTxInfo(tx.TransactionInfo)
+			if e != nil {
+				return nil, e
+			}
+			return &types.MempoolTransactionResponse{
+				Transaction: rstx,
+				Metadata:    nil,
+			}, nil
+		}
+	}
 
 	return &types.MempoolTransactionResponse{}, nil
 }
