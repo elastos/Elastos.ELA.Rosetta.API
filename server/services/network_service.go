@@ -55,27 +55,32 @@ func (s *NetworkAPIService) NetworkStatus(
 	ctx context.Context,
 	request *types.NetworkRequest,
 ) (*types.NetworkStatusResponse, *types.Error) {
+	if !NetworkCheck(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
+
 	currentHeight, err := rpc.GetCurrentHeight(config.Parameters.MainNodeRPC)
 	if err != nil {
-		log.Printf("get current height err: %s\n", err.Error())
+		log.Printf("GetCurrentHeight err: %s\n", err.Error())
 		return nil, errors.GetCurrentBlockFailed
 	}
 
 	blockInfo, err := rpc.GetBlockByHeight(currentHeight, config.Parameters.MainNodeRPC)
 	if err != nil {
-		log.Printf("get block by height err: %s\n", err.Error())
+		log.Printf("GetBlockByHeight err: %s\n", err.Error())
 		return nil, errors.BlockNotExist
 	}
 
 	genesisBlockInfo, err := rpc.GetBlockByHeight(0, config.Parameters.MainNodeRPC)
 	if err != nil {
-		log.Printf("get genesis block err: %s\n", err.Error())
+		log.Printf("GetBlockByHeight err: %s\n", err.Error())
 		return nil, errors.BlockNotExist
 	}
 
 	neighbors, err := rpc.GetNeighbors(config.Parameters.MainNodeRPC)
 	if err != nil {
-		log.Printf("get neighbors err: %s\n", err.Error())
+		log.Printf("GetNeighbors err: %s\n", err.Error())
 		return nil, errors.GetNeighborsFailed
 	}
 
@@ -106,6 +111,11 @@ func (s *NetworkAPIService) NetworkOptions(
 	ctx context.Context,
 	request *types.NetworkRequest,
 ) (*types.NetworkOptionsResponse, *types.Error) {
+	if !NetworkCheck(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
+
 	nodeState, err := rpc.GetNodeState(config.Parameters.MainNodeRPC)
 	if err != nil {
 		log.Printf("get node state err: %s\n", err.Error())
