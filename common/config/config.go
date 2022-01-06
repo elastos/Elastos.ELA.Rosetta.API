@@ -93,4 +93,17 @@ func Initialize() {
 		fmt.Printf("Need to set main node in config file\n")
 		return
 	}
+	printJson(Parameters)
+}
+
+func printJson(data interface{}) {
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	buf := new(bytes.Buffer)
+	json.Indent(buf, dataBytes, "", "    ")
+	fmt.Println(string(buf.Bytes()))
 }
