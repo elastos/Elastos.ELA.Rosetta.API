@@ -38,7 +38,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
 	for i, input := range tx.Inputs {
 		referTransactionHash := input.Previous.TxID
-		referTransaction, err := rpc.GetTransactionByHash(input.Previous.TxID.String(), config.Parameters.MainNodeRPC)
+		referTransaction, err := rpc.GetTransaction(input.Previous.TxID.String(), config.Parameters.MainNodeRPC)
 		if err != nil {
 			return nil, errors.TransactionNotExist
 		}
@@ -124,7 +124,7 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 	operations := make([]*types.Operation, 0)
 	for i, input := range tx.Inputs {
 		referTransactionHash := input.TxID
-		referTransaction, err := rpc.GetTransactionByHash(input.TxID, config.Parameters.MainNodeRPC)
+		referTransaction, err := rpc.GetTransaction(input.TxID, config.Parameters.MainNodeRPC)
 		if err != nil {
 			return nil, errors.TransactionNotExist
 		}
