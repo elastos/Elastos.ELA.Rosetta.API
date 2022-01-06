@@ -145,7 +145,7 @@ func (s *NetworkAPIService) NetworkOptions(
 			HistoricalBalanceLookup: false,
 			CallMethods:             []string{},
 			BalanceExemptions:       []*types.BalanceExemption{},
-			MempoolCoins:            true,
+			MempoolCoins:            false,
 		},
 	}, nil
 }

@@ -159,6 +159,15 @@ func GetUnspentUtxo(addresses []string, config *config.RpcConfig) ([]base.UTXOIn
 	return utxoInfos, nil
 }
 
+func GetReceivedByAddress(address string, config *config.RpcConfig) (string, error) {
+	balanceInterface, err := CallAndUnmarshal("getreceivedbyaddress", Param("address", address), config)
+	if err != nil {
+		return "", err
+	}
+	balance := balanceInterface.(string)
+	return balance, nil
+}
+
 func GetNodeState(config *config.RpcConfig) (*servers.ServerInfo, error) {
 	result, err := CallAndUnmarshal("getnodestate", nil, config)
 	if err != nil {
