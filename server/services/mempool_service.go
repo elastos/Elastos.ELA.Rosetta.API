@@ -47,7 +47,7 @@ func NewMempoolAPIService(network *types.NetworkIdentifier) server.MempoolAPISer
 }
 
 func (s *MempoolAPIService) Mempool(ctx context.Context, request *types.NetworkRequest) (*types.MempoolResponse, *types.Error) {
-	if !NetworkCheck(request.NetworkIdentifier) {
+	if !CheckNetwork(request.NetworkIdentifier) {
 		log.Printf("unsupport network")
 		return nil, errors.UnsupportNetwork
 	}
@@ -74,7 +74,7 @@ func (s *MempoolAPIService) MempoolTransaction(
 	ctx context.Context,
 	request *types.MempoolTransactionRequest,
 ) (*types.MempoolTransactionResponse, *types.Error) {
-	if !NetworkCheck(request.NetworkIdentifier) {
+	if !CheckNetwork(request.NetworkIdentifier) {
 		log.Printf("unsupport network")
 		return nil, errors.UnsupportNetwork
 	}

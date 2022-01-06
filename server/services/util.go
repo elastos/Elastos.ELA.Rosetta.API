@@ -21,7 +21,7 @@ func GetCoinIdentifier(hash common.Uint256, index uint16) string {
 	return hash.String() + ":" + strconv.Itoa(int(index))
 }
 
-func NetworkCheck(network *types.NetworkIdentifier) bool {
+func CheckNetwork(network *types.NetworkIdentifier) bool {
 	if network.Blockchain == base.BlockChainName && network.Network == config.Parameters.ActiveNet {
 		return true
 	}
@@ -39,7 +39,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 		}
 		addr, err := referTransaction.Outputs[input.Previous.Index].ProgramHash.ToAddress()
 		if err != nil {
-			return nil, errors.EncodeToAddress
+			return nil, errors.EncodeToAddressFailed
 		}
 
 		operations = append(operations, &types.Operation{
@@ -77,7 +77,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 	for i, output := range tx.Outputs {
 		addr, err := output.ProgramHash.ToAddress()
 		if err != nil {
-			return nil, errors.EncodeToAddress
+			return nil, errors.EncodeToAddressFailed
 		}
 
 		operations = append(operations, &types.Operation{
@@ -113,4 +113,52 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 	}
 
 	return operations, nil
+}
+
+func GetRosettaTransaction(tx *types2.Transaction) (*types.Transaction, *types.Error) {
+	operations, e := GetOperations(tx)
+	if e != nil {
+		return nil, e
+	}
+	return &types.Transaction{
+		TransactionIdentifier: &types.TransactionIdentifier{
+			Hash: tx.Hash().String(),
+		},
+		Operations:          operations,
+		RelatedTransactions: nil,
+		Metadata:            nil,
+	}, nil
+}
+
+func GetRosettaBlock(block *base.BlockInfo) (*types.Block, *types.Error) {
+	var txs []*types.Transaction
+	for _, t := range block.Tx {
+		tx, ok := t.(*types2.Transaction)
+		if !ok {
+			return nil, errors.InvalidTransaction
+		}
+		rstx, e := GetRosettaTransaction(tx)
+		if e != nil {
+			return nil, e
+		}
+		txs = append(txs, rstx)
+	}
+
+	var previousBlockIndex int64
+	if block.Height > 1 {
+		previousBlockIndex = int64(block.Height - 1)
+	}
+	return &types.Block{
+		BlockIdentifier: &types.BlockIdentifier{
+			Index: int64(block.Height),
+			Hash:  block.Hash,
+		},
+		ParentBlockIdentifier: &types.BlockIdentifier{
+			Index: previousBlockIndex,
+			Hash:  block.PreviousBlockHash,
+		},
+		Timestamp:    int64(block.Time),
+		Transactions: txs,
+		Metadata:     nil,
+	}, nil
 }
