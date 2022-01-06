@@ -39,28 +39,6 @@ type ArbitratorGroupInfo struct {
 	Arbitrators           []string
 }
 
-func GetTransactionByHash(hash string, config *config.RpcConfig) (*types.Transaction, error) {
-	resp, err := CallAndUnmarshalResponse("gettransaction", Param("hash", hash),
-		config)
-	if err != nil {
-		return nil, errors.New("[gettransaction] unable to call rpc " + err.Error())
-	}
-	rawTx, ok := resp.Result.(string)
-	if !ok {
-		return nil, errors.New("[gettransaction] rpc result not correct ")
-	}
-	buf, err := hex.DecodeString(rawTx)
-	if err != nil {
-		return nil, errors.New("[gettransaction] invalid data from" + err.Error())
-	}
-	var txn types.Transaction
-	err = txn.Deserialize(bytes.NewReader(buf))
-	if err != nil {
-		return nil, errors.New("[gettransaction] decode transaction error " + err.Error())
-	}
-	return &txn, nil
-}
-
 func GetCurrentHeight(config *config.RpcConfig) (uint32, error) {
 	result, err := CallAndUnmarshal("getblockcount", nil, config)
 	if err != nil {

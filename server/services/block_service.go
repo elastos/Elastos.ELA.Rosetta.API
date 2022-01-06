@@ -69,7 +69,7 @@ func (s *BlockAPIService) BlockTransaction(
 		return nil, errors.UnsupportNetwork
 	}
 
-	tx, err := rpc.GetTransactionByHash(request.TransactionIdentifier.Hash, config.Parameters.MainNodeRPC)
+	tx, err := rpc.GetTransaction(request.TransactionIdentifier.Hash, config.Parameters.MainNodeRPC)
 	if err != nil {
 		return nil, errors.TransactionNotExist
 	}
