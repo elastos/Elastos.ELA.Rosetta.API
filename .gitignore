@@ -22,6 +22,6 @@ keystore
 ela
 ela-cli
 ela-dns
-cb-client
-cb-server
-cb-fetcher
+rs-client
+rs-server
+rs-fetcher

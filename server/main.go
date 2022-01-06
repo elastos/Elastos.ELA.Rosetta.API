@@ -27,10 +27,6 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
-const (
-	serverPort = 8080
-)
-
 // NewBlockchainRouter creates a Mux http.Handler from a collection
 // of server controllers.
 func NewBlockchainRouter(
@@ -78,6 +74,6 @@ func main() {
 	router := NewBlockchainRouter(network, asserter)
 	loggedRouter := server.LoggerMiddleware(router)
 	corsRouter := server.CorsMiddleware(loggedRouter)
-	log.Printf("Listening on port %d\n", serverPort)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", serverPort), corsRouter))
+	log.Printf("Listening on port %d\n", config.Parameters.ServerPort)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Parameters.ServerPort), corsRouter))
 }

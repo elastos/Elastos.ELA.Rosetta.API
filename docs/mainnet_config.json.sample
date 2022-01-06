@@ -1,11 +1,12 @@
 {
   "Configuration": {
-    "RpcConfiguration": {
-      "User": "User",
-      "Pass": "Password",
-      "WhiteIPList": [
-        "127.0.0.1"
-      ]
+    "ActiveNet": "mainnet",
+    "ServerPort": 10000,
+    "MainNodeRPC": {
+	    "IpAddress": "127.0.0.1",
+	    "HttpJsonPort": 22336,
+	    "User": "username",
+	    "Pass": "password"
     }
   }
 }
