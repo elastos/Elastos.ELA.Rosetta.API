@@ -20,7 +20,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
@@ -162,89 +161,10 @@ func (s *BlockAPIService) BlockTransaction(
 	}
 	log.Printf("transactionk: %v\n", tx)
 
-	// create operations
-	// todo: Extract common methods
-	operations := make([]*types.Operation, 0)
-	for i, input := range tx.Inputs {
-		referTransactionHash := input.Previous.TxID
-		referTransaction, err := rpc.GetTransactionByHash(input.Previous.TxID.String(), config.Parameters.MainNode.Rpc)
-		if err != nil {
-			return nil, errors.TransactionNotExist
-		}
-		addr, err := referTransaction.Outputs[input.Previous.Index].ProgramHash.ToAddress()
-		if err != nil {
-			return nil, errors.EncodeToAddress
-		}
-
-		operations = append(operations, &types.Operation{
-			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(i),
-				NetworkIndex: &base.MainnetNetworkIndex,
-			},
-			RelatedOperations: nil,
-			Type:              base.MainnetNextworkType,
-			Status:            &base.MainnetStatus,
-			Account: &types.AccountIdentifier{
-				Address:    addr,
-				SubAccount: nil,
-				Metadata:   nil,
-			},
-			Amount: &types.Amount{
-				Value: base.GetSelaString(referTransaction.Outputs[input.Previous.Index].Value),
-				Currency: &types.Currency{
-					Symbol:   base.MainnetCurrencySymbol,
-					Decimals: base.MainnetCurrencyDecimal,
-					Metadata: nil,
-				},
-				Metadata: nil,
-			},
-			CoinChange: &types.CoinChange{
-				CoinIdentifier: &types.CoinIdentifier{
-					Identifier: base.GetCoinIdentifier(referTransactionHash, input.Previous.Index),
-				},
-				CoinAction: "coin_spent",
-			},
-			Metadata: nil,
-		})
-	}
-
-	// todo: Extract common methods
-	for i, output := range tx.Outputs {
-		addr, err := output.ProgramHash.ToAddress()
-		if err != nil {
-			return nil, errors.EncodeToAddress
-		}
-
-		operations = append(operations, &types.Operation{
-			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(len(tx.Inputs) + i),
-				NetworkIndex: &base.MainnetNetworkIndex,
-			},
-			RelatedOperations: nil,
-			Type:              base.MainnetNextworkType,
-			Status:            &base.MainnetStatus,
-			Account: &types.AccountIdentifier{
-				Address:    addr,
-				SubAccount: nil,
-				Metadata:   nil,
-			},
-			Amount: &types.Amount{
-				Value: base.GetSelaString(output.Value),
-				Currency: &types.Currency{
-					Symbol:   base.MainnetCurrencySymbol,
-					Decimals: base.MainnetCurrencyDecimal,
-					Metadata: nil,
-				},
-				Metadata: nil,
-			},
-			CoinChange: &types.CoinChange{
-				CoinIdentifier: &types.CoinIdentifier{
-					Identifier: base.GetCoinIdentifier(tx.Hash(), uint16(i)),
-				},
-				CoinAction: "coin_created",
-			},
-			Metadata: nil,
-		})
+	// get operations
+	operations, e := GetOperations(tx)
+	if e != nil {
+		return nil, e
 	}
 
 	return &types.BlockTransactionResponse{
