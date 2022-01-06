@@ -1,15 +1,16 @@
 package services
 
 import (
-	"github.com/coinbase/rosetta-sdk-go/types"
+	"strconv"
+
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
-	types2 "github.com/elastos/Elastos.ELA/core/types"
-	"strconv"
 
+	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/elastos/Elastos.ELA/common"
+	types2 "github.com/elastos/Elastos.ELA/core/types"
 )
 
 func GetSelaString(value common.Fixed64) string {
@@ -24,7 +25,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
 	for i, input := range tx.Inputs {
 		referTransactionHash := input.Previous.TxID
-		referTransaction, err := rpc.GetTransactionByHash(input.Previous.TxID.String(), config.Parameters.MainNode.Rpc)
+		referTransaction, err := rpc.GetTransactionByHash(input.Previous.TxID.String(), config.Parameters.MainNodeRPC)
 		if err != nil {
 			return nil, errors.TransactionNotExist
 		}

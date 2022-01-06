@@ -26,9 +26,10 @@ type RpcConfiguration struct {
 }
 
 type Configuration struct {
-	ActiveNet string          `json:"ActiveNet"`
-	Version   uint32          `json:"Version"`
-	MainNode  *MainNodeConfig `json:"MainNode"`
+	ActiveNet   string     `json:"ActiveNet"`
+	Version     uint32     `json:"Version"`
+	ServerPort  int        `json:"ServerPort"`
+	MainNodeRPC *RpcConfig `json:"MainNodeRPC"`
 }
 
 type RpcConfig struct {
@@ -36,10 +37,6 @@ type RpcConfig struct {
 	HttpJsonPort int    `json:"HttpJsonPort"`
 	User         string `json:"User"`
 	Pass         string `json:"Pass"`
-}
-
-type MainNodeConfig struct {
-	Rpc *RpcConfig `json:"Rpc"`
 }
 
 type ConfigFile struct {
@@ -92,7 +89,7 @@ func Initialize() {
 		os.Exit(1)
 	}
 
-	if Parameters.Configuration.MainNode == nil {
+	if Parameters.Configuration.MainNodeRPC == nil {
 		fmt.Printf("Need to set main node in config file\n")
 		return
 	}

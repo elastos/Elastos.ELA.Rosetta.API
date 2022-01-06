@@ -51,7 +51,7 @@ func (s *BlockAPIService) Block(
 			previousBlockIndex = 0
 		}
 
-		block, err := rpc.GetBlockByHeight(1000, config.Parameters.MainNode.Rpc)
+		block, err := rpc.GetBlockByHeight(1000, config.Parameters.MainNodeRPC)
 		if err != nil {
 			errStr := err.Error()
 			log.Printf("err: %s\n", errStr)
@@ -155,7 +155,7 @@ func (s *BlockAPIService) BlockTransaction(
 	request *types.BlockTransactionRequest,
 ) (*types.BlockTransactionResponse, *types.Error) {
 
-	tx, err := rpc.GetTransactionByHash(request.TransactionIdentifier.Hash, config.Parameters.MainNode.Rpc)
+	tx, err := rpc.GetTransactionByHash(request.TransactionIdentifier.Hash, config.Parameters.MainNodeRPC)
 	if err != nil {
 		return nil, errors.TransactionNotExist
 	}

@@ -23,12 +23,11 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 )
 
 const (
 	// serverURL is the URL of a Rosetta Server.
-	serverURL = "http://localhost:8080"
+	serverURL = "http://localhost:10000"
 
 	// agent is the user-agent on requests to the
 	// Rosetta Server.
@@ -40,11 +39,9 @@ const (
 )
 
 func main() {
-	config.Initialize()
 	ctx := context.Background()
 
 	// Step 1: Create a client
-	// todo: put serverURL agent defaultTimeout to config file
 	clientCfg := client.NewConfiguration(
 		serverURL,
 		agent,
