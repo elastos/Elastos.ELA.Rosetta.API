@@ -16,9 +16,7 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"time"
 
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
@@ -45,108 +43,20 @@ func (s *BlockAPIService) Block(
 	ctx context.Context,
 	request *types.BlockRequest,
 ) (*types.BlockResponse, *types.Error) {
-	if *request.BlockIdentifier.Index != 1000 {
-		previousBlockIndex := *request.BlockIdentifier.Index - 1
-		if previousBlockIndex < 0 {
-			previousBlockIndex = 0
-		}
-
-		block, err := rpc.GetBlockByHeight(1000, config.Parameters.MainNodeRPC)
-		if err != nil {
-			errStr := err.Error()
-			log.Printf("err: %s\n", errStr)
-			return nil, &types.Error{
-				Code:        12,
-				Message:     errStr,
-				Description: nil,
-				Retriable:   false,
-				Details:     nil,
-			}
-		}
-		log.Printf("block: %v\n", block)
-
-		return &types.BlockResponse{
-			Block: &types.Block{
-				BlockIdentifier: &types.BlockIdentifier{
-					Index: *request.BlockIdentifier.Index,
-					Hash:  fmt.Sprintf("block %d", *request.BlockIdentifier.Index),
-				},
-				ParentBlockIdentifier: &types.BlockIdentifier{
-					Index: previousBlockIndex,
-					Hash:  fmt.Sprintf("block %d", previousBlockIndex),
-				},
-				Timestamp:    time.Now().UnixNano() / 1000000,
-				Transactions: []*types.Transaction{},
-			},
-		}, nil
+	if !CheckNetwork(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
 	}
 
-	return &types.BlockResponse{
-		Block: &types.Block{
-			BlockIdentifier: &types.BlockIdentifier{
-				Index: 1000,
-				Hash:  "block 1000",
-			},
-			ParentBlockIdentifier: &types.BlockIdentifier{
-				Index: 999,
-				Hash:  "block 999",
-			},
-			Timestamp: 1586483189000,
-			Transactions: []*types.Transaction{
-				{
-					TransactionIdentifier: &types.TransactionIdentifier{
-						Hash: "transaction 0",
-					},
-					Operations: []*types.Operation{
-						{
-							OperationIdentifier: &types.OperationIdentifier{
-								Index: 0,
-							},
-							Type:   "Transfer",
-							Status: types.String("Success"),
-							Account: &types.AccountIdentifier{
-								Address: "account 0",
-							},
-							Amount: &types.Amount{
-								Value: "-1000",
-								Currency: &types.Currency{
-									Symbol:   "ROS",
-									Decimals: 2,
-								},
-							},
-						},
-						{
-							OperationIdentifier: &types.OperationIdentifier{
-								Index: 1,
-							},
-							RelatedOperations: []*types.OperationIdentifier{
-								{
-									Index: 0,
-								},
-							},
-							Type:   "Transfer",
-							Status: types.String("Reverted"),
-							Account: &types.AccountIdentifier{
-								Address: "account 1",
-							},
-							Amount: &types.Amount{
-								Value: "1000",
-								Currency: &types.Currency{
-									Symbol:   "ROS",
-									Decimals: 2,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		OtherTransactions: []*types.TransactionIdentifier{
-			{
-				Hash: "transaction 1",
-			},
-		},
-	}, nil
+	block, err := rpc.GetBlockByHeight(uint32(*request.BlockIdentifier.Index), config.Parameters.MainNodeRPC)
+	if err != nil || block.Hash != *request.BlockIdentifier.Hash {
+		return nil, errors.BlockNotExist
+	}
+	rsBlock, e := GetRosettaBlock(block)
+	if e != nil {
+		return nil, e
+	}
+	return &types.BlockResponse{Block: rsBlock}, nil
 }
 
 // BlockTransaction implements the /block/transaction endpoint.
@@ -154,25 +64,20 @@ func (s *BlockAPIService) BlockTransaction(
 	ctx context.Context,
 	request *types.BlockTransactionRequest,
 ) (*types.BlockTransactionResponse, *types.Error) {
+	if !CheckNetwork(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
 
 	tx, err := rpc.GetTransactionByHash(request.TransactionIdentifier.Hash, config.Parameters.MainNodeRPC)
 	if err != nil {
 		return nil, errors.TransactionNotExist
 	}
-	log.Printf("transactionk: %v\n", tx)
 
-	// get operations
-	operations, e := GetOperations(tx)
+	rstx, e := GetRosettaTransaction(tx)
 	if e != nil {
 		return nil, e
 	}
 
-	return &types.BlockTransactionResponse{
-		Transaction: &types.Transaction{
-			TransactionIdentifier: &types.TransactionIdentifier{
-				Hash: tx.Hash().String(),
-			},
-			Operations: operations,
-		},
-	}, nil
+	return &types.BlockTransactionResponse{Transaction: rstx}, nil
 }

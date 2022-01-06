@@ -28,6 +28,7 @@ const (
 	DecodeAddressError
 	EncodeToAddressError
 	UnsupportNetworkError
+	InvalidTransactionError
 )
 
 var (
@@ -73,13 +74,13 @@ var (
 		Retriable: false,
 	}
 
-	DecodeAddress = &types.Error{
+	DecodeAddressFailed = &types.Error{
 		Code:      DecodeAddressError,
 		Message:   "failed to decode address",
 		Retriable: false,
 	}
 
-	EncodeToAddress = &types.Error{
+	EncodeToAddressFailed = &types.Error{
 		Code:      EncodeToAddressError,
 		Message:   "failed to encode to address",
 		Retriable: false,
@@ -88,6 +89,12 @@ var (
 	UnsupportNetwork = &types.Error{
 		Code:      UnsupportNetworkError,
 		Message:   "unsupport network",
+		Retriable: false,
+	}
+
+	InvalidTransaction = &types.Error{
+		Code:      InvalidTransactionError,
+		Message:   "invalid transaction data",
 		Retriable: false,
 	}
 )
@@ -100,7 +107,8 @@ var APIErrorMap = []*types.Error{
 	GetNeighborsFailed,
 	GetNodeStateFailed,
 	GetMempoolFailed,
-	DecodeAddress,
-	EncodeToAddress,
+	DecodeAddressFailed,
+	EncodeToAddressFailed,
 	UnsupportNetwork,
+	InvalidTransaction,
 }
