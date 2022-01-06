@@ -47,26 +47,6 @@ type OutputInfo struct {
 	OutputLock uint32 `json:"outputlock"`
 }
 
-type TransactionInfo struct {
-	TxId           string          `json:"txid"`
-	Hash           string          `json:"hash"`
-	Size           uint32          `json:"size"`
-	VSize          uint32          `json:"vsize"`
-	Version        uint32          `json:"version"`
-	LockTime       uint32          `json:"locktime"`
-	Inputs         []InputInfo     `json:"vin"`
-	Outputs        []OutputInfo    `json:"vout"`
-	BlockHash      string          `json:"blockhash"`
-	Confirmations  uint32          `json:"confirmations"`
-	Time           uint32          `json:"time"`
-	BlockTime      uint32          `json:"blocktime"`
-	TxType         types.TxType    `json:"type"`
-	PayloadVersion byte            `json:"payloadversion"`
-	Payload        PayloadInfo     `json:"payload"`
-	Attributes     []AttributeInfo `json:"attributes"`
-	Programs       []ProgramInfo   `json:"programs"`
-}
-
 type BlockInfo struct {
 	Hash              string        `json:"hash"`
 	Confirmations     uint32        `json:"confirmations"`
