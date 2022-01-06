@@ -16,10 +16,14 @@ package services
 
 import (
 	"context"
+	"log"
+
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 )
 
 // NetworkAPIService implements the server.NetworkAPIServicer interface.
@@ -51,21 +55,49 @@ func (s *NetworkAPIService) NetworkStatus(
 	ctx context.Context,
 	request *types.NetworkRequest,
 ) (*types.NetworkStatusResponse, *types.Error) {
+	currentHeight, err := rpc.GetCurrentHeight(config.Parameters.MainNode.Rpc)
+	if err != nil {
+		log.Printf("get current height err: %s\n", err.Error())
+		return nil, errors.GetCurrentBlockFailed
+	}
+
+	blockInfo, err := rpc.GetBlockByHeight(currentHeight, config.Parameters.MainNode.Rpc)
+	if err != nil {
+		log.Printf("get block by height err: %s\n", err.Error())
+		return nil, errors.BlockNotExist
+	}
+
+	genesisBlockInfo, err := rpc.GetBlockByHeight(0, config.Parameters.MainNode.Rpc)
+	if err != nil {
+		log.Printf("get genesis block err: %s\n", err.Error())
+		return nil, errors.BlockNotExist
+	}
+
+	neighbors, err := rpc.GetNeighbors(config.Parameters.MainNode.Rpc)
+	if err != nil {
+		log.Printf("get neighbors err: %s\n", err.Error())
+		return nil, errors.GetNeighborsFailed
+	}
+
+	peers := make([]*types.Peer, 0, len(neighbors))
+	for _, n := range neighbors {
+		peer := types.Peer{
+			PeerID: n,
+		}
+		peers = append(peers, &peer)
+	}
+
 	return &types.NetworkStatusResponse{
 		CurrentBlockIdentifier: &types.BlockIdentifier{
-			Index: 1000,
-			Hash:  "block 1000",
+			Index: int64(currentHeight),
+			Hash:  blockInfo.Hash,
 		},
-		CurrentBlockTimestamp: int64(1586483189000),
+		CurrentBlockTimestamp: int64(blockInfo.Time),
 		GenesisBlockIdentifier: &types.BlockIdentifier{
-			Index: 0,
-			Hash:  "block 0",
+			Index: int64(genesisBlockInfo.Height),
+			Hash:  genesisBlockInfo.Hash,
 		},
-		Peers: []*types.Peer{
-			{
-				PeerID: "peer 1",
-			},
-		},
+		Peers: peers,
 	}, nil
 }
 
@@ -74,11 +106,16 @@ func (s *NetworkAPIService) NetworkOptions(
 	ctx context.Context,
 	request *types.NetworkRequest,
 ) (*types.NetworkOptionsResponse, *types.Error) {
-	// TODO: fix NodeVersion after node rpc provide version API
+	nodeState, err := rpc.GetNodeState(config.Parameters.MainNode.Rpc)
+	if err != nil {
+		log.Printf("get node state err: %s\n", err.Error())
+		return nil, errors.GetNodeStateFailed
+	}
+
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
 			RosettaVersion: "1.4.10",
-			NodeVersion:    "0.8.2",
+			NodeVersion:    nodeState.Compile,
 		},
 		Allow: &types.Allow{
 			OperationStatuses: []*types.OperationStatus{

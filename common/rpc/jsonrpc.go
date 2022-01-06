@@ -19,6 +19,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/servers"
 )
 
 type Response struct {
@@ -156,6 +157,34 @@ func GetUnspentUtxo(addresses []string, config *config.RpcConfig) ([]base.UTXOIn
 		return nil, err
 	}
 	return utxoInfos, nil
+}
+
+func GetNodeState(config *config.RpcConfig) (*servers.ServerInfo, error) {
+	result, err := CallAndUnmarshal("getnodestate", nil, config)
+	if err != nil {
+		return nil, err
+	}
+
+	serverInfo := &servers.ServerInfo{}
+	if err := Unmarshal(&result, serverInfo); err != nil {
+		return nil, err
+	}
+
+	return serverInfo, nil
+}
+
+func GetNeighbors(config *config.RpcConfig) ([]string, error) {
+	result, err := CallAndUnmarshal("getneighbors", nil, config)
+	if err != nil {
+		return []string{}, err
+	}
+
+	var neighbors []string
+	if err := Unmarshal(&result, &neighbors); err != nil {
+		return []string{}, err
+	}
+
+	return neighbors, nil
 }
 
 func post(url string, contentType string, user string, pass string, body io.Reader) (resp *http.Response, err error) {

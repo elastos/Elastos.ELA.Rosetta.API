@@ -20,7 +20,10 @@ const (
 	DefaultError int32 = iota
 	TransactionNotExistError
 	ReferTransactionNotExistError
+	GetCurrentBlockError
 	BlockNotExistError
+	GetNeighborsError
+	GetNodeStateError
 	DecodeAddressError
 	EncodeToAddressError
 )
@@ -38,9 +41,27 @@ var (
 		Retriable: false,
 	}
 
+	GetCurrentBlockFailed = &types.Error{
+		Code:      GetCurrentBlockError,
+		Message:   "failed to get current block height",
+		Retriable: false,
+	}
+
 	BlockNotExist = &types.Error{
 		Code:      BlockNotExistError,
 		Message:   "failed to get block by rpc",
+		Retriable: false,
+	}
+
+	GetNeighborsFailed = &types.Error{
+		Code:      GetNeighborsError,
+		Message:   "failed to get neighbors",
+		Retriable: false,
+	}
+
+	GetNodeStateFailed = &types.Error{
+		Code:      GetNodeStateError,
+		Message:   "failed to get node state",
 		Retriable: false,
 	}
 
