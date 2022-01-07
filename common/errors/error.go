@@ -21,6 +21,7 @@ const (
 	TransactionNotExistError
 	ReferTransactionNotExistError
 	GetCurrentBlockError
+	GetCurrentHeightError
 	BlockNotExistError
 	GetNeighborsError
 	GetNodeStateError
@@ -54,6 +55,12 @@ var (
 	GetCurrentBlockFailed = &types.Error{
 		Code:      GetCurrentBlockError,
 		Message:   "failed to get current block height",
+		Retriable: false,
+	}
+
+	GetCurrentHeightFailed = &types.Error{
+		Code:      GetCurrentHeightError,
+		Message:   "failed to get current height",
 		Retriable: false,
 	}
 
@@ -152,6 +159,7 @@ var APIErrorMap = []*types.Error{
 	TransactionNotExist,
 	ReferTransactionNotExist,
 	GetCurrentBlockFailed,
+	GetCurrentHeightFailed,
 	BlockNotExist,
 	GetNeighborsFailed,
 	GetNodeStateFailed,

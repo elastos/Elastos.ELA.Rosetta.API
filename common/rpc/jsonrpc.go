@@ -51,7 +51,7 @@ func GetCurrentHeight(config *config.RpcConfig) (uint32, error) {
 }
 
 func GetBlockByHeight(height uint32, config *config.RpcConfig) (*base.BlockInfo, error) {
-	resp, err := CallAndUnmarshal("getblockbyheight", Param("height", height), config)
+	resp, err := CallAndUnmarshal("getblockbyheight", Param("height", height).Add("verbosity", 2), config)
 	if err != nil {
 		return nil, err
 	}
@@ -61,16 +61,9 @@ func GetBlockByHeight(height uint32, config *config.RpcConfig) (*base.BlockInfo,
 	return block, nil
 }
 
-func GetBlockByHash(hash *common.Uint256, config *config.RpcConfig) (*base.BlockInfo, error) {
-	hashBytes, err := common.HexStringToBytes(hash.String())
-	if err != nil {
-		return nil, err
-	}
-	reversedHashBytes := common.BytesReverse(hashBytes)
-	reversedHashStr := common.BytesToHexString(reversedHashBytes)
-
+func GetBlockByHash(hash string, config *config.RpcConfig) (*base.BlockInfo, error) {
 	resp, err := CallAndUnmarshal("getblock",
-		Param("blockhash", reversedHashStr).Add("verbosity", 2), config)
+		Param("blockhash", hash).Add("verbosity", 2), config)
 	if err != nil {
 		return nil, err
 	}
@@ -300,20 +293,20 @@ func GetTransaction(tx string, config *config.RpcConfig) (*types.Transaction, er
 	resp, err := CallAndUnmarshalResponse("getrawtransaction", param,
 		config)
 	if err != nil {
-		return nil, errors.New("[MoniterFailedDepositTransfer] Unable to call getfaileddeposittransactions rpc " + err.Error())
+		return nil, errors.New("unable to call rpc, err:" + err.Error())
 	}
 	rawTx, ok := resp.Result.(string)
 	if !ok {
-		return nil, errors.New("[MoniterFailedDepositTransfer] Getrawtransaction rpc result not correct ")
+		return nil, errors.New("getrawtransaction rpc result not correct")
 	}
 	buf, err := hex.DecodeString(rawTx)
 	if err != nil {
-		return nil, errors.New("[MoniterFailedDepositTransfer] Invalid data from GetSmallCrossTransferTxs " + err.Error())
+		return nil, errors.New("invalid data from " + err.Error())
 	}
 	var txn types.Transaction
 	err = txn.Deserialize(bytes.NewReader(buf))
 	if err != nil {
-		return nil, errors.New("[MoniterFailedDepositTransfer] Decode transaction error " + err.Error())
+		return nil, errors.New("decode transaction error " + err.Error())
 	}
 	return &txn, nil
 }

@@ -1,6 +1,9 @@
 package services
 
 import (
+	"bytes"
+	"encoding/json"
+	"log"
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
@@ -40,47 +43,51 @@ func CheckNetwork(network *types.NetworkIdentifier) bool {
 
 func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
-	for i, input := range tx.Inputs {
-		referTransactionHash := input.Previous.TxID
-		referTransaction, err := rpc.GetTransaction(input.Previous.TxID.String(), config.Parameters.MainNodeRPC)
-		if err != nil {
-			return nil, errors.TransactionNotExist
-		}
-		addr, err := referTransaction.Outputs[input.Previous.Index].ProgramHash.ToAddress()
-		if err != nil {
-			return nil, errors.EncodeToAddressFailed
-		}
+	var inputsCount int
+	if tx.TxType != types2.CoinBase {
+		inputsCount = len(tx.Inputs)
+		for i, input := range tx.Inputs {
+			referTransactionHash := input.Previous.TxID
+			referTransaction, err := rpc.GetTransaction(input.Previous.TxID.String(), config.Parameters.MainNodeRPC)
+			if err != nil {
+				return nil, errors.TransactionNotExist
+			}
+			addr, err := referTransaction.Outputs[input.Previous.Index].ProgramHash.ToAddress()
+			if err != nil {
+				return nil, errors.EncodeToAddressFailed
+			}
 
-		operations = append(operations, &types.Operation{
-			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(i),
-				NetworkIndex: &base.MainnetNetworkIndex,
-			},
-			RelatedOperations: nil,
-			Type:              base.MainnetNextworkType,
-			Status:            &base.MainnetStatus,
-			Account: &types.AccountIdentifier{
-				Address:    addr,
-				SubAccount: nil,
-				Metadata:   nil,
-			},
-			Amount: &types.Amount{
-				Value: GetSelaString(referTransaction.Outputs[input.Previous.Index].Value),
-				Currency: &types.Currency{
-					Symbol:   base.MainnetCurrencySymbol,
-					Decimals: base.MainnetCurrencyDecimal,
+			operations = append(operations, &types.Operation{
+				OperationIdentifier: &types.OperationIdentifier{
+					Index:        int64(i),
+					NetworkIndex: &base.MainnetNetworkIndex,
+				},
+				RelatedOperations: nil,
+				Type:              base.MainnetNextworkType,
+				Status:            &base.MainnetStatus,
+				Account: &types.AccountIdentifier{
+					Address:    addr,
+					SubAccount: nil,
+					Metadata:   nil,
+				},
+				Amount: &types.Amount{
+					Value: GetSelaString(referTransaction.Outputs[input.Previous.Index].Value),
+					Currency: &types.Currency{
+						Symbol:   base.MainnetCurrencySymbol,
+						Decimals: base.MainnetCurrencyDecimal,
+						Metadata: nil,
+					},
 					Metadata: nil,
 				},
-				Metadata: nil,
-			},
-			CoinChange: &types.CoinChange{
-				CoinIdentifier: &types.CoinIdentifier{
-					Identifier: GetCoinIdentifier(referTransactionHash, input.Previous.Index),
+				CoinChange: &types.CoinChange{
+					CoinIdentifier: &types.CoinIdentifier{
+						Identifier: GetCoinIdentifier(referTransactionHash, input.Previous.Index),
+					},
+					CoinAction: "coin_spent",
 				},
-				CoinAction: "coin_spent",
-			},
-			Metadata: nil,
-		})
+				Metadata: nil,
+			})
+		}
 	}
 
 	for i, output := range tx.Outputs {
@@ -91,7 +98,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 
 		operations = append(operations, &types.Operation{
 			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(len(tx.Inputs) + i),
+				Index:        int64(inputsCount + i),
 				NetworkIndex: &base.MainnetNetworkIndex,
 			},
 			RelatedOperations: nil,
@@ -124,49 +131,67 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 	return operations, nil
 }
 
+func GetReversedString(txid string) (*string, error) {
+	hex, err := common.FromReversedString(txid)
+	if err != nil {
+		return nil, err
+	}
+	var hash common.Uint256
+	err = hash.Deserialize(bytes.NewReader(hex))
+	if err != nil {
+		return nil, err
+	}
+	reversedTxid := hash.String()
+	return &reversedTxid, nil
+}
+
 func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
-	for i, input := range tx.Inputs {
-		referTransactionHash := input.TxID
-		referTransaction, err := rpc.GetTransaction(input.TxID, config.Parameters.MainNodeRPC)
-		if err != nil {
-			return nil, errors.TransactionNotExist
-		}
-		addr, err := referTransaction.Outputs[input.VOut].ProgramHash.ToAddress()
-		if err != nil {
-			return nil, errors.EncodeToAddressFailed
-		}
 
-		operations = append(operations, &types.Operation{
-			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(i),
-				NetworkIndex: &base.MainnetNetworkIndex,
-			},
-			RelatedOperations: nil,
-			Type:              base.MainnetNextworkType,
-			Status:            &base.MainnetStatus,
-			Account: &types.AccountIdentifier{
-				Address:    addr,
-				SubAccount: nil,
-				Metadata:   nil,
-			},
-			Amount: &types.Amount{
-				Value: GetSelaString(referTransaction.Outputs[input.VOut].Value),
-				Currency: &types.Currency{
-					Symbol:   base.MainnetCurrencySymbol,
-					Decimals: base.MainnetCurrencyDecimal,
+	var inputsCount int
+	if tx.TxType != types2.CoinBase {
+		inputsCount = len(tx.Inputs)
+		for i, input := range tx.Inputs {
+			referTransaction, err := rpc.GetTransaction(input.TxID, config.Parameters.MainNodeRPC)
+			if err != nil {
+				return nil, errors.TransactionNotExist
+			}
+			addr, err := referTransaction.Outputs[input.VOut].ProgramHash.ToAddress()
+			if err != nil {
+				return nil, errors.EncodeToAddressFailed
+			}
+
+			operations = append(operations, &types.Operation{
+				OperationIdentifier: &types.OperationIdentifier{
+					Index:        int64(i),
+					NetworkIndex: &base.MainnetNetworkIndex,
+				},
+				RelatedOperations: nil,
+				Type:              base.MainnetNextworkType,
+				Status:            &base.MainnetStatus,
+				Account: &types.AccountIdentifier{
+					Address:    addr,
+					SubAccount: nil,
+					Metadata:   nil,
+				},
+				Amount: &types.Amount{
+					Value: GetSelaString(referTransaction.Outputs[input.VOut].Value),
+					Currency: &types.Currency{
+						Symbol:   base.MainnetCurrencySymbol,
+						Decimals: base.MainnetCurrencyDecimal,
+						Metadata: nil,
+					},
 					Metadata: nil,
 				},
-				Metadata: nil,
-			},
-			CoinChange: &types.CoinChange{
-				CoinIdentifier: &types.CoinIdentifier{
-					Identifier: GetCoinIdentifierByHashStr(referTransactionHash, input.VOut),
+				CoinChange: &types.CoinChange{
+					CoinIdentifier: &types.CoinIdentifier{
+						Identifier: GetCoinIdentifierByHashStr(input.TxID, input.VOut),
+					},
+					CoinAction: "coin_spent",
 				},
-				CoinAction: "coin_spent",
-			},
-			Metadata: nil,
-		})
+				Metadata: nil,
+			})
+		}
 	}
 
 	for i, output := range tx.Outputs {
@@ -178,7 +203,7 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 
 		operations = append(operations, &types.Operation{
 			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(len(tx.Inputs) + i),
+				Index:        int64(inputsCount + i),
 				NetworkIndex: &base.MainnetNetworkIndex,
 			},
 			RelatedOperations: nil,
@@ -241,14 +266,46 @@ func GetRosettaTransactionByTxInfo(tx *servers.TransactionInfo) (*types.Transact
 	}, nil
 }
 
-func GetRosettaBlock(block *base.BlockInfo) (*types.Block, *types.Error) {
+func GetRosettaBlock(block *types2.Block) (*types.Block, *types.Error) {
 	var txs []*types.Transaction
+	for _, t := range block.Transactions {
+		rstx, e := GetRosettaTransaction(t)
+		if e != nil {
+			return nil, e
+		}
+		txs = append(txs, rstx)
+	}
+
+	var previousBlockIndex int64
+	if block.Height > 1 {
+		previousBlockIndex = int64(block.Height - 1)
+	}
+	return &types.Block{
+		BlockIdentifier: &types.BlockIdentifier{
+			Index: int64(block.Height),
+			Hash:  block.Hash().String(),
+		},
+		ParentBlockIdentifier: &types.BlockIdentifier{
+			Index: previousBlockIndex,
+			Hash:  block.Previous.String(),
+		},
+		Timestamp:    GetRosettaTimestamp(block.Timestamp),
+		Transactions: txs,
+		Metadata:     nil,
+	}, nil
+}
+
+func GetRosettaBlockByBlockInfo(block *base.BlockInfo) (*types.Block, *types.Error) {
+	txs := make([]*types.Transaction, 0)
 	for _, t := range block.Tx {
-		tx, ok := t.(*types2.Transaction)
-		if !ok {
+		bytes, _ := json.Marshal(t)
+		var txInfo servers.TransactionContextInfo
+		err := json.Unmarshal(bytes, &txInfo)
+		if err != nil {
+			log.Printf("invalid transaction context %v", t)
 			return nil, errors.InvalidTransaction
 		}
-		rstx, e := GetRosettaTransaction(tx)
+		rstx, e := GetRosettaTransactionByTxInfo(txInfo.TransactionInfo)
 		if e != nil {
 			return nil, e
 		}

@@ -16,6 +16,7 @@ package services
 
 import (
 	"context"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"log"
 
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
@@ -48,14 +49,39 @@ func (s *BlockAPIService) Block(
 		return nil, errors.UnsupportNetwork
 	}
 
-	block, err := rpc.GetBlockByHeight(uint32(*request.BlockIdentifier.Index), config.Parameters.MainNodeRPC)
-	if err != nil || block.Hash != *request.BlockIdentifier.Hash {
-		return nil, errors.BlockNotExist
+	var block *base.BlockInfo
+	if request.BlockIdentifier.Index != nil {
+		var err error
+		block, err = rpc.GetBlockByHeight(uint32(*request.BlockIdentifier.Index), config.Parameters.MainNodeRPC)
+		if err != nil {
+			return nil, errors.BlockNotExist
+		}
+
+		if request.BlockIdentifier.Hash != nil && block.Hash != *request.BlockIdentifier.Hash {
+			return nil, errors.BlockNotExist
+		}
+	} else if request.BlockIdentifier.Hash != nil {
+		var err error
+		block, err = rpc.GetBlockByHash(*request.BlockIdentifier.Hash, config.Parameters.MainNodeRPC)
+		if err != nil {
+			return nil, errors.BlockNotExist
+		}
+	} else {
+		height, err := rpc.GetCurrentHeight(config.Parameters.MainNodeRPC)
+		if err != nil {
+			return nil, errors.GetCurrentHeightFailed
+		}
+		block, err = rpc.GetBlockByHeight(height, config.Parameters.MainNodeRPC)
+		if err != nil {
+			return nil, errors.BlockNotExist
+		}
 	}
-	rsBlock, e := GetRosettaBlock(block)
-	if e != nil {
-		return nil, e
+
+	rsBlock, rsError := GetRosettaBlockByBlockInfo(block)
+	if rsError != nil {
+		return nil, rsError
 	}
+
 	return &types.BlockResponse{Block: rsBlock}, nil
 }
 
@@ -71,6 +97,7 @@ func (s *BlockAPIService) BlockTransaction(
 
 	tx, err := rpc.GetTransaction(request.TransactionIdentifier.Hash, config.Parameters.MainNodeRPC)
 	if err != nil {
+		log.Println("get transaction error:", err)
 		return nil, errors.TransactionNotExist
 	}
 
