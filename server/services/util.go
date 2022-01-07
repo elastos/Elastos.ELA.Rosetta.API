@@ -14,6 +14,10 @@ import (
 	"github.com/elastos/Elastos.ELA/servers"
 )
 
+func GetRosettaTimestamp(time uint32) int64 {
+	return int64(time * 1000)
+}
+
 func GetSelaString(value common.Fixed64) string {
 	return strconv.Itoa(int(value))
 }
@@ -264,7 +268,7 @@ func GetRosettaBlock(block *base.BlockInfo) (*types.Block, *types.Error) {
 			Index: previousBlockIndex,
 			Hash:  block.PreviousBlockHash,
 		},
-		Timestamp:    int64(block.Time),
+		Timestamp:    GetRosettaTimestamp(block.Time),
 		Transactions: txs,
 		Metadata:     nil,
 	}, nil

@@ -97,7 +97,7 @@ func (s *NetworkAPIService) NetworkStatus(
 			Index: int64(currentHeight),
 			Hash:  blockInfo.Hash,
 		},
-		CurrentBlockTimestamp: int64(blockInfo.Time),
+		CurrentBlockTimestamp: GetRosettaTimestamp(blockInfo.Time),
 		GenesisBlockIdentifier: &types.BlockIdentifier{
 			Index: int64(genesisBlockInfo.Height),
 			Hash:  genesisBlockInfo.Hash,
