@@ -3,13 +3,13 @@ package client
 import (
 	ctx "context"
 	"github.com/coinbase/rosetta-sdk-go/client"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 const (
-	// serverURL is the URL of a Rosetta Server.
-	serverURL = "http://localhost:8080"
 
 	// agent is the user-agent on requests to the
 	// Rosetta Server.
@@ -20,10 +20,14 @@ const (
 	defaultTimeout = 10 * time.Second
 )
 
+func init() {
+	config.Initialize()
+}
+
 // Step 1: Create a client
 func create_test_client() *client.APIClient {
 	clientCfg := client.NewConfiguration(
-		serverURL,
+		config.Parameters.MainNodeRPC.IpAddress+":"+strconv.Itoa(config.Parameters.ServerPort),
 		agent,
 		&http.Client{
 			Timeout: defaultTimeout,
