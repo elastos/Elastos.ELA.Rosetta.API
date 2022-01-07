@@ -13,6 +13,7 @@ const BlockChainName = "Elastos"
 const MainnetNextworkType = "Transfer"
 const MainnetCurrencySymbol = "ELA"
 const MainnetCurrencyDecimal int32 = 8
+const MainnetCurveType = "secp256r1"
 
 type ProgramInfo struct {
 	Code      string

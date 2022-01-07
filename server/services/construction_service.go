@@ -3,8 +3,12 @@ package services
 import (
 	"context"
 
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
+
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	contract2 "github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 // ConstructionAPIServicer implements the server.ConstructionAPIServicer interface.
@@ -27,10 +31,36 @@ func (s *ConstructionAPIServicer) ConstructionCombine(
 }
 
 func (s *ConstructionAPIServicer) ConstructionDerive(
-	context.Context,
-	*types.ConstructionDeriveRequest,
+	ctx context.Context,
+	request *types.ConstructionDeriveRequest,
 ) (*types.ConstructionDeriveResponse, *types.Error) {
-	return nil, nil
+	if err := checkCurveType(request.PublicKey.CurveType); err != nil {
+		return nil, err
+	}
+
+	pkBytes := request.PublicKey.Bytes
+	pk, err := crypto.DecodePoint(pkBytes)
+	if err != nil {
+		return nil, errors.InvalidCurveType
+	}
+	contract, err := contract2.CreateStandardContract(pk)
+	if err != nil {
+		return nil, errors.InvalidPublicKey
+	}
+
+	addr, err := contract.ToProgramHash().ToAddress()
+	if err != nil {
+		return nil, errors.InvalidPublicKey
+	}
+
+	return &types.ConstructionDeriveResponse{
+		AccountIdentifier: &types.AccountIdentifier{
+			Address:    addr,
+			SubAccount: nil,
+			Metadata:   nil,
+		},
+		Metadata: nil,
+	}, nil
 }
 
 func (s *ConstructionAPIServicer) ConstructionHash(

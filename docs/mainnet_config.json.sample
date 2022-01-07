@@ -1,7 +1,7 @@
 {
   "Configuration": {
     "ActiveNet": "mainnet",
-    "ServerPort": 10000,
+    "ServerPort": 1234,
     "MainNodeRPC": {
 	    "IpAddress": "127.0.0.1",
 	    "HttpJsonPort": 22336,

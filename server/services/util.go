@@ -269,3 +269,10 @@ func GetRosettaBlock(block *base.BlockInfo) (*types.Block, *types.Error) {
 		Metadata:     nil,
 	}, nil
 }
+
+func checkCurveType(curveType types.CurveType) *types.Error {
+	if curveType != base.MainnetCurveType {
+		return errors.InvalidCurveType
+	}
+	return nil
+}

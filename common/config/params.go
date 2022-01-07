@@ -5,7 +5,7 @@ var (
 		ConfigFile: Configuration{
 			ActiveNet:  "regnet",
 			Version:    0,
-			ServerPort: 10000,
+			ServerPort: 1234,
 			MainNodeRPC: &RpcConfig{
 				User:         "",
 				Pass:         "",
@@ -19,7 +19,7 @@ var (
 		ConfigFile: Configuration{
 			ActiveNet:  "testnet",
 			Version:    0,
-			ServerPort: 10000,
+			ServerPort: 1234,
 			MainNodeRPC: &RpcConfig{
 				User:         "",
 				Pass:         "",
@@ -33,7 +33,7 @@ var (
 		ConfigFile: Configuration{
 			ActiveNet:  "mainnet",
 			Version:    0,
-			ServerPort: 10000,
+			ServerPort: 1234,
 			MainNodeRPC: &RpcConfig{
 				User:         "",
 				Pass:         "",
