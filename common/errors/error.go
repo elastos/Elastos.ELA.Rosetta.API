@@ -31,6 +31,8 @@ const (
 	InvalidTransactionError
 	GetAddressBalanceError
 	GetUnspentUtxoError
+	CurveTypeError
+	PublicKeyError
 )
 
 var (
@@ -105,9 +107,22 @@ var (
 		Message:   "failed to get address balance",
 		Retriable: false,
 	}
+
 	GetUnspentUtxoFailed = &types.Error{
 		Code:      GetUnspentUtxoError,
 		Message:   "failed to get address utxo",
+		Retriable: false,
+	}
+
+	InvalidCurveType = &types.Error{
+		Code:      CurveTypeError,
+		Message:   "invalid curve type, need to be secp256r1",
+		Retriable: false,
+	}
+
+	InvalidPublicKey = &types.Error{
+		Code:      PublicKeyError,
+		Message:   "invalid public key, decode failed",
 		Retriable: false,
 	}
 )
@@ -124,4 +139,6 @@ var APIErrorMap = []*types.Error{
 	EncodeToAddressFailed,
 	UnsupportNetwork,
 	InvalidTransaction,
+	InvalidCurveType,
+	InvalidPublicKey,
 }
