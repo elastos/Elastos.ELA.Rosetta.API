@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log"
 
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 
@@ -34,6 +35,11 @@ func (s *ConstructionAPIServicer) ConstructionDerive(
 	ctx context.Context,
 	request *types.ConstructionDeriveRequest,
 ) (*types.ConstructionDeriveResponse, *types.Error) {
+	if !CheckNetwork(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
+
 	if err := checkCurveType(request.PublicKey.CurveType); err != nil {
 		return nil, err
 	}
