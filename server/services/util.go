@@ -15,7 +15,7 @@ import (
 )
 
 func GetRosettaTimestamp(time uint32) int64 {
-	return int64(time * 1000)
+	return int64(time) * 1000
 }
 
 func GetSelaString(value common.Fixed64) string {
