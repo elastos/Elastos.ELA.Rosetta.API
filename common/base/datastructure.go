@@ -10,6 +10,7 @@ var MainnetNetworkIndex int64 = 0
 var MainnetStatus = "Success"
 
 const BlockChainName = "Elastos"
+const MainnetSignatureType = "ecdsa"
 const MainnetNextworkType = "Transfer"
 const MainnetCurrencySymbol = "ELA"
 const MainnetCurrencyDecimal int32 = 8

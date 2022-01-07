@@ -33,6 +33,9 @@ const (
 	GetUnspentUtxoError
 	CurveTypeError
 	PublicKeyError
+	DecodeTransactionError
+	DecodePublicKeyError
+	SignatureTypeError
 )
 
 var (
@@ -125,6 +128,24 @@ var (
 		Message:   "invalid public key, decode failed",
 		Retriable: false,
 	}
+
+	DecodeTransactionFailed = &types.Error{
+		Code:      DecodeTransactionError,
+		Message:   "failed to deserialize tx from hexstring",
+		Retriable: false,
+	}
+
+	DecodePublicKeyFailed = &types.Error{
+		Code:      DecodePublicKeyError,
+		Message:   "failed to decode pubkey from hexstring",
+		Retriable: false,
+	}
+
+	InvalidSignatureType = &types.Error{
+		Code:      SignatureTypeError,
+		Message:   "invalid signature type, need to be ecdsa",
+		Retriable: false,
+	}
 )
 
 var APIErrorMap = []*types.Error{
@@ -139,6 +160,11 @@ var APIErrorMap = []*types.Error{
 	EncodeToAddressFailed,
 	UnsupportNetwork,
 	InvalidTransaction,
+	GetAddressBalanceFailed,
+	GetUnspentUtxoFailed,
 	InvalidCurveType,
 	InvalidPublicKey,
+	DecodeTransactionFailed,
+	DecodePublicKeyFailed,
+	InvalidSignatureType,
 }
