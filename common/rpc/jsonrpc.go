@@ -211,6 +211,21 @@ func GetMempoolAll(config *config.RpcConfig) ([]*servers.TransactionContextInfo,
 	return txContextInfo, nil
 }
 
+func PublishTransaction(rawtx string, config *config.RpcConfig) (string, error) {
+	parameter := make(map[string]interface{})
+	parameter["data"] = rawtx
+
+	result, err := CallAndUnmarshal("sendrawtransaction", parameter, config)
+	if err != nil {
+		log.Printf("sendrawtransaction err: %s\n", err.Error())
+		return "", err
+	}
+
+	txHash := result.(string)
+
+	return txHash, nil
+}
+
 func post(url string, contentType string, user string, pass string, body io.Reader) (resp *http.Response, err error) {
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {

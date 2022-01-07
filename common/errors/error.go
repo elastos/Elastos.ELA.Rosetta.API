@@ -34,8 +34,10 @@ const (
 	CurveTypeError
 	PublicKeyError
 	DecodeTransactionError
+	DeserializeTransactionError
 	DecodePublicKeyError
 	SignatureTypeError
+	PublishTransactionError
 )
 
 var (
@@ -131,7 +133,13 @@ var (
 
 	DecodeTransactionFailed = &types.Error{
 		Code:      DecodeTransactionError,
-		Message:   "failed to deserialize tx from hexstring",
+		Message:   "failed to decode tx from hexstring",
+		Retriable: false,
+	}
+
+	DeserializeTransactionFailed = &types.Error{
+		Code:      DeserializeTransactionError,
+		Message:   "failed to deserialize tx",
 		Retriable: false,
 	}
 
@@ -144,6 +152,12 @@ var (
 	InvalidSignatureType = &types.Error{
 		Code:      SignatureTypeError,
 		Message:   "invalid signature type, need to be ecdsa",
+		Retriable: false,
+	}
+
+	PublishTransactionFailed = &types.Error{
+		Code:      PublishTransactionError,
+		Message:   "publish tx failed",
 		Retriable: false,
 	}
 )
@@ -167,4 +181,5 @@ var APIErrorMap = []*types.Error{
 	DecodeTransactionFailed,
 	DecodePublicKeyFailed,
 	InvalidSignatureType,
+	PublishTransactionFailed,
 }

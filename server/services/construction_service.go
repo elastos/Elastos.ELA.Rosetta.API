@@ -7,7 +7,9 @@ import (
 	"log"
 
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -49,7 +51,7 @@ func (s *ConstructionAPIServicer) ConstructionCombine(
 	err = txn.Deserialize(bytes.NewReader(txUnsignedBytes))
 	if err != nil {
 		log.Printf("deserialize tx err: %s\n", err.Error())
-		return nil, errors.DecodeTransactionFailed
+		return nil, errors.DeserializeTransactionFailed
 	}
 
 	for _, sign := range request.Signatures {
@@ -172,8 +174,36 @@ func (s *ConstructionAPIServicer) ConstructionPreprocess(
 }
 
 func (s *ConstructionAPIServicer) ConstructionSubmit(
-	context.Context,
-	*types.ConstructionSubmitRequest,
+	ctx context.Context,
+	request *types.ConstructionSubmitRequest,
 ) (*types.TransactionIdentifierResponse, *types.Error) {
-	return nil, nil
+	if !CheckNetwork(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
+
+	buf, err := hex.DecodeString(request.SignedTransaction)
+	if err != nil {
+		log.Printf("decode tx from hexstring err: %s\n", err.Error())
+		return nil, errors.DecodeTransactionFailed
+	}
+
+	var txn elatypes.Transaction
+	err = txn.Deserialize(bytes.NewReader(buf))
+	if err != nil {
+		log.Printf("tx deserialize err: %s\n", err.Error())
+		return nil, errors.DeserializeTransactionFailed
+	}
+
+	txHash, err := rpc.PublishTransaction(request.SignedTransaction, config.Parameters.MainNodeRPC)
+	if err != nil {
+		log.Printf("publishtransaction err: %s\n", err.Error())
+		return nil, errors.PublishTransactionFailed
+	}
+
+	return &types.TransactionIdentifierResponse{
+		TransactionIdentifier: &types.TransactionIdentifier{
+			Hash: txHash,
+		},
+	}, nil
 }
