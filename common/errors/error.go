@@ -39,6 +39,11 @@ const (
 	DecodePublicKeyError
 	SignatureTypeError
 	PublishTransactionError
+	InvalidCoinChangeError
+	InvalidOperationIdentifierError
+	InvalidCoinIdentifierError
+	InvalidOperationAmountError
+	InvalidOperationAccountAddressError
 )
 
 var (
@@ -167,6 +172,32 @@ var (
 		Message:   "publish tx failed",
 		Retriable: false,
 	}
+
+	InvalidCoinChange = &types.Error{
+		Code:      InvalidCoinChangeError,
+		Message:   "operation must have coin change",
+		Retriable: false,
+	}
+	InvalidOperationIdentifier = &types.Error{
+		Code:      InvalidOperationIdentifierError,
+		Message:   "operation has no operation identifier",
+		Retriable: false,
+	}
+	InvalidCoinIdentifier = &types.Error{
+		Code:      InvalidCoinIdentifierError,
+		Message:   "invalid coin identifier",
+		Retriable: false,
+	}
+	InvalidOperationAmount = &types.Error{
+		Code:      InvalidOperationAmountError,
+		Message:   "invalid operation amount",
+		Retriable: false,
+	}
+	InvalidOperationAccountAddress = &types.Error{
+		Code:      InvalidOperationAccountAddressError,
+		Message:   "invalid operation address",
+		Retriable: false,
+	}
 )
 
 var APIErrorMap = []*types.Error{
@@ -190,4 +221,9 @@ var APIErrorMap = []*types.Error{
 	DecodePublicKeyFailed,
 	InvalidSignatureType,
 	PublishTransactionFailed,
+	InvalidCoinChange,
+	InvalidOperationIdentifier,
+	InvalidCoinIdentifier,
+	InvalidOperationAmount,
+	InvalidOperationAccountAddress,
 }

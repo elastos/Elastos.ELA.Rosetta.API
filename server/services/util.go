@@ -13,7 +13,9 @@ import (
 
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/elastos/Elastos.ELA/common"
+	contract2 "github.com/elastos/Elastos.ELA/core/contract"
 	types2 "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/servers"
 )
 
@@ -43,52 +45,6 @@ func CheckNetwork(network *types.NetworkIdentifier) bool {
 
 func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
-	var inputsCount int
-	if tx.TxType != types2.CoinBase {
-		inputsCount = len(tx.Inputs)
-		for i, input := range tx.Inputs {
-			referTransactionHash := input.Previous.TxID
-			referTransaction, err := rpc.GetTransaction(input.Previous.TxID.String(), config.Parameters.MainNodeRPC)
-			if err != nil {
-				return nil, errors.TransactionNotExist
-			}
-			addr, err := referTransaction.Outputs[input.Previous.Index].ProgramHash.ToAddress()
-			if err != nil {
-				return nil, errors.EncodeToAddressFailed
-			}
-
-			operations = append(operations, &types.Operation{
-				OperationIdentifier: &types.OperationIdentifier{
-					Index:        int64(i),
-					NetworkIndex: &base.MainnetNetworkIndex,
-				},
-				RelatedOperations: nil,
-				Type:              base.MainnetNextworkType,
-				Status:            &base.MainnetStatus,
-				Account: &types.AccountIdentifier{
-					Address:    addr,
-					SubAccount: nil,
-					Metadata:   nil,
-				},
-				Amount: &types.Amount{
-					Value: GetSelaString(referTransaction.Outputs[input.Previous.Index].Value),
-					Currency: &types.Currency{
-						Symbol:   base.MainnetCurrencySymbol,
-						Decimals: base.MainnetCurrencyDecimal,
-						Metadata: nil,
-					},
-					Metadata: nil,
-				},
-				CoinChange: &types.CoinChange{
-					CoinIdentifier: &types.CoinIdentifier{
-						Identifier: GetCoinIdentifier(referTransactionHash, input.Previous.Index),
-					},
-					CoinAction: "coin_spent",
-				},
-				Metadata: nil,
-			})
-		}
-	}
 
 	for i, output := range tx.Outputs {
 		addr, err := output.ProgramHash.ToAddress()
@@ -98,7 +54,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 
 		operations = append(operations, &types.Operation{
 			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(inputsCount + i),
+				Index:        int64(i),
 				NetworkIndex: &base.MainnetNetworkIndex,
 			},
 			RelatedOperations: nil,
@@ -122,10 +78,56 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 				CoinIdentifier: &types.CoinIdentifier{
 					Identifier: GetCoinIdentifier(tx.Hash(), uint16(i)),
 				},
-				CoinAction: "coin_created",
+				CoinAction: types.CoinCreated,
 			},
 			Metadata: nil,
 		})
+	}
+
+	if tx.TxType != types2.CoinBase {
+		outpusCount := len(tx.Outputs)
+		for i, input := range tx.Inputs {
+			referTransactionHash := input.Previous.TxID
+			referTransaction, err := rpc.GetTransaction(input.Previous.TxID.String(), config.Parameters.MainNodeRPC)
+			if err != nil {
+				return nil, errors.TransactionNotExist
+			}
+			addr, err := referTransaction.Outputs[input.Previous.Index].ProgramHash.ToAddress()
+			if err != nil {
+				return nil, errors.EncodeToAddressFailed
+			}
+
+			operations = append(operations, &types.Operation{
+				OperationIdentifier: &types.OperationIdentifier{
+					Index:        int64(outpusCount + i),
+					NetworkIndex: &base.MainnetNetworkIndex,
+				},
+				RelatedOperations: nil,
+				Type:              base.MainnetNextworkType,
+				Status:            &base.MainnetStatus,
+				Account: &types.AccountIdentifier{
+					Address:    addr,
+					SubAccount: nil,
+					Metadata:   nil,
+				},
+				Amount: &types.Amount{
+					Value: GetSelaString(referTransaction.Outputs[input.Previous.Index].Value),
+					Currency: &types.Currency{
+						Symbol:   base.MainnetCurrencySymbol,
+						Decimals: base.MainnetCurrencyDecimal,
+						Metadata: nil,
+					},
+					Metadata: nil,
+				},
+				CoinChange: &types.CoinChange{
+					CoinIdentifier: &types.CoinIdentifier{
+						Identifier: GetCoinIdentifier(referTransactionHash, input.Previous.Index),
+					},
+					CoinAction: types.CoinSpent,
+				},
+				Metadata: nil,
+			})
+		}
 	}
 
 	return operations, nil
@@ -148,52 +150,7 @@ func GetReversedString(txid string) (*string, error) {
 func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
 
-	var inputsCount int
-	if tx.TxType != types2.CoinBase {
-		inputsCount = len(tx.Inputs)
-		for i, input := range tx.Inputs {
-			referTransaction, err := rpc.GetTransaction(input.TxID, config.Parameters.MainNodeRPC)
-			if err != nil {
-				return nil, errors.TransactionNotExist
-			}
-			addr, err := referTransaction.Outputs[input.VOut].ProgramHash.ToAddress()
-			if err != nil {
-				return nil, errors.EncodeToAddressFailed
-			}
-
-			operations = append(operations, &types.Operation{
-				OperationIdentifier: &types.OperationIdentifier{
-					Index:        int64(i),
-					NetworkIndex: &base.MainnetNetworkIndex,
-				},
-				RelatedOperations: nil,
-				Type:              base.MainnetNextworkType,
-				Status:            &base.MainnetStatus,
-				Account: &types.AccountIdentifier{
-					Address:    addr,
-					SubAccount: nil,
-					Metadata:   nil,
-				},
-				Amount: &types.Amount{
-					Value: GetSelaString(referTransaction.Outputs[input.VOut].Value),
-					Currency: &types.Currency{
-						Symbol:   base.MainnetCurrencySymbol,
-						Decimals: base.MainnetCurrencyDecimal,
-						Metadata: nil,
-					},
-					Metadata: nil,
-				},
-				CoinChange: &types.CoinChange{
-					CoinIdentifier: &types.CoinIdentifier{
-						Identifier: GetCoinIdentifierByHashStr(input.TxID, input.VOut),
-					},
-					CoinAction: "coin_spent",
-				},
-				Metadata: nil,
-			})
-		}
-	}
-
+	// record output index first, then record input index
 	for i, output := range tx.Outputs {
 		addr := output.Address
 		amount, err := common.StringToFixed64(output.Value)
@@ -203,7 +160,7 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 
 		operations = append(operations, &types.Operation{
 			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(inputsCount + i),
+				Index:        int64(i),
 				NetworkIndex: &base.MainnetNetworkIndex,
 			},
 			RelatedOperations: nil,
@@ -227,10 +184,55 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 				CoinIdentifier: &types.CoinIdentifier{
 					Identifier: GetCoinIdentifierByHashStr(tx.Hash, uint16(i)),
 				},
-				CoinAction: "coin_created",
+				CoinAction: types.CoinCreated,
 			},
 			Metadata: nil,
 		})
+	}
+
+	if tx.TxType != types2.CoinBase {
+		outpusCount := len(tx.Outputs)
+		for i, input := range tx.Inputs {
+			referTransaction, err := rpc.GetTransaction(input.TxID, config.Parameters.MainNodeRPC)
+			if err != nil {
+				return nil, errors.TransactionNotExist
+			}
+			addr, err := referTransaction.Outputs[input.VOut].ProgramHash.ToAddress()
+			if err != nil {
+				return nil, errors.EncodeToAddressFailed
+			}
+
+			operations = append(operations, &types.Operation{
+				OperationIdentifier: &types.OperationIdentifier{
+					Index:        int64(outpusCount + i),
+					NetworkIndex: &base.MainnetNetworkIndex,
+				},
+				RelatedOperations: nil,
+				Type:              base.MainnetNextworkType,
+				Status:            &base.MainnetStatus,
+				Account: &types.AccountIdentifier{
+					Address:    addr,
+					SubAccount: nil,
+					Metadata:   nil,
+				},
+				Amount: &types.Amount{
+					Value: GetSelaString(referTransaction.Outputs[input.VOut].Value),
+					Currency: &types.Currency{
+						Symbol:   base.MainnetCurrencySymbol,
+						Decimals: base.MainnetCurrencyDecimal,
+						Metadata: nil,
+					},
+					Metadata: nil,
+				},
+				CoinChange: &types.CoinChange{
+					CoinIdentifier: &types.CoinIdentifier{
+						Identifier: GetCoinIdentifierByHashStr(input.TxID, input.VOut),
+					},
+					CoinAction: types.CoinSpent,
+				},
+				Metadata: nil,
+			})
+		}
 	}
 
 	return operations, nil
@@ -336,4 +338,22 @@ func checkCurveType(curveType types.CurveType) *types.Error {
 		return errors.InvalidCurveType
 	}
 	return nil
+}
+
+func publicKeyToAddress(pkBytes []byte) (*string, *types.Error) {
+	pk, err := crypto.DecodePoint(pkBytes)
+	if err != nil {
+		return nil, errors.InvalidCurveType
+	}
+	contract, err := contract2.CreateStandardContract(pk)
+	if err != nil {
+		return nil, errors.InvalidPublicKey
+	}
+
+	addr, err := contract.ToProgramHash().ToAddress()
+	if err != nil {
+		return nil, errors.InvalidPublicKey
+	}
+
+	return &addr, nil
 }
