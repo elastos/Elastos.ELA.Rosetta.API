@@ -134,10 +134,33 @@ func (s *ConstructionAPIServicer) ConstructionDerive(
 }
 
 func (s *ConstructionAPIServicer) ConstructionHash(
-	context.Context,
-	*types.ConstructionHashRequest,
+	ctx context.Context,
+	request *types.ConstructionHashRequest,
 ) (*types.TransactionIdentifierResponse, *types.Error) {
-	return nil, nil
+	if !CheckNetwork(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
+
+	txBytes, err := hex.DecodeString(request.SignedTransaction)
+	if err != nil {
+		log.Printf("decode tx from hexstring err: %s\n", err.Error())
+		return nil, errors.DecodeTransactionFailed
+	}
+
+	var txn elatypes.Transaction
+	err = txn.Deserialize(bytes.NewReader(txBytes))
+	if err != nil {
+		log.Printf("deserialize tx err: %s\n", err.Error())
+		return nil, errors.DecodeTransactionFailed
+	}
+
+	return &types.TransactionIdentifierResponse{
+		TransactionIdentifier: &types.TransactionIdentifier{
+			Hash: txn.Hash().String(),
+		},
+		Metadata: nil,
+	}, nil
 }
 
 func (s *ConstructionAPIServicer) ConstructionMetadata(
