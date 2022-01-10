@@ -14,9 +14,11 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/elastos/Elastos.ELA/common"
+	config2 "github.com/elastos/Elastos.ELA/common/config"
 	contract2 "github.com/elastos/Elastos.ELA/core/contract"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	elatypes "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
@@ -109,23 +111,14 @@ func (s *ConstructionAPIServicer) ConstructionDerive(
 	}
 
 	pkBytes := request.PublicKey.Bytes
-	pk, err := crypto.DecodePoint(pkBytes)
+	addr, err := publicKeyToAddress(pkBytes)
 	if err != nil {
-		return nil, errors.InvalidCurveType
-	}
-	contract, err := contract2.CreateStandardContract(pk)
-	if err != nil {
-		return nil, errors.InvalidPublicKey
-	}
-
-	addr, err := contract.ToProgramHash().ToAddress()
-	if err != nil {
-		return nil, errors.InvalidPublicKey
+		return nil, err
 	}
 
 	return &types.ConstructionDeriveResponse{
 		AccountIdentifier: &types.AccountIdentifier{
-			Address:    addr,
+			Address:    *addr,
 			SubAccount: nil,
 			Metadata:   nil,
 		},
@@ -178,10 +171,103 @@ func (s *ConstructionAPIServicer) ConstructionParse(
 }
 
 func (s *ConstructionAPIServicer) ConstructionPayloads(
-	context.Context,
-	*types.ConstructionPayloadsRequest,
+	ctx context.Context,
+	request *types.ConstructionPayloadsRequest,
 ) (*types.ConstructionPayloadsResponse, *types.Error) {
-	return nil, nil
+	if !CheckNetwork(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
+	payloads := make([]*types.SigningPayload, 0)
+	for _, p := range request.PublicKeys {
+		if p == nil {
+			return nil, errors.InvalidPublicKey
+		}
+		if err := checkCurveType(p.CurveType); err != nil {
+			return nil, err
+		}
+		addr, err := publicKeyToAddress(p.Bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		payloads = append(payloads, &types.SigningPayload{
+			AccountIdentifier: &types.AccountIdentifier{
+				Address:    *addr,
+				SubAccount: nil,
+				Metadata:   nil,
+			},
+			Bytes:         p.Bytes,
+			SignatureType: types.Ecdsa,
+		})
+	}
+
+	inputs := make([]*elatypes.Input, 0)
+	outputs := make([]*elatypes.Output, 0)
+	for _, opr := range request.Operations {
+		if opr.CoinChange == nil || opr.CoinChange.CoinIdentifier == nil {
+			return nil, errors.InvalidCoinChange
+		}
+		if opr.OperationIdentifier == nil {
+			return nil, errors.InvalidOperationIdentifier
+		}
+		if opr.Amount == nil {
+			return nil, errors.InvalidOperationAmount
+		}
+
+		switch opr.CoinChange.CoinAction {
+		case types.CoinSpent:
+			txidStr := opr.CoinChange.CoinIdentifier.Identifier
+			txid, err := common.Uint256FromHexString(txidStr)
+			if err != nil {
+				return nil, errors.InvalidCoinIdentifier
+			}
+			inputs = append(inputs, &elatypes.Input{
+				Previous: elatypes.OutPoint{
+					TxID:  *txid,
+					Index: uint16(opr.OperationIdentifier.Index),
+				},
+				Sequence: 0,
+			})
+		case types.CoinCreated:
+			amount, err := common.StringToFixed64(opr.Amount.Value)
+			if err != nil {
+				return nil, errors.InvalidOperationAmount
+			}
+			addr, err := common.Uint168FromAddress(opr.Account.Address)
+			if err != nil {
+				return nil, errors.InvalidOperationAccountAddress
+			}
+			outputs = append(outputs, &elatypes.Output{
+				AssetID:     config2.ELAAssetID,
+				Value:       *amount,
+				ProgramHash: *addr,
+			})
+		}
+	}
+
+	txn := &elatypes.Transaction{
+		Version:        0x09,
+		TxType:         elatypes.TransferAsset,
+		PayloadVersion: 0,
+		Payload:        &payload.TransferAsset{},
+		Attributes:     []*elatypes.Attribute{},
+		Inputs:         inputs,
+		Outputs:        outputs,
+		LockTime:       0,
+		Programs:       nil,
+	}
+
+	buf := new(bytes.Buffer)
+	if err := txn.Serialize(buf); err != nil {
+		log.Printf("tx serialize err: %s\n", err.Error())
+		return nil, errors.InvalidTransaction
+	}
+
+	return &types.ConstructionPayloadsResponse{
+		UnsignedTransaction: common.BytesToHexString(buf.Bytes()),
+		Payloads:            payloads,
+	}, nil
 }
 
 func (s *ConstructionAPIServicer) ConstructionPreprocess(
