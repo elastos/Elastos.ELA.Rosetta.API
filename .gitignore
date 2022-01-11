@@ -4,7 +4,7 @@
 .idea/codeStyles
 *.orig
 *.rej
-*.json
+/*.json
 *.db
 *.dat
 *.txn

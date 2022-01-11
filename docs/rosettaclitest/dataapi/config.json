@@ -1,0 +1,26 @@
+{
+ "network": {
+  "blockchain": "Elastos",
+  "network": "mainnet"
+ },
+ "online_url": "http://localhost:8080",
+ "data_directory": "",
+ "http_timeout": 10,
+ "tip_delay": 300,
+ "data": {
+  "reconciliation_disabled": true,
+  "inactive_discrepancy_search_disabled": true,
+  "balance_tracking_disabled": true,
+  "end_conditions": {
+   "tip": true
+  }
+ },
+ "construction": {
+  "stale_depth": 3,
+  "broadcast_limit": 5,
+  "constructor_dsl_file": "test.ros",
+  "end_conditions": {
+   "create_account": 1
+  }
+ }
+}
