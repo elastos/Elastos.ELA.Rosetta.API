@@ -122,7 +122,6 @@ var (
 		Retriable: false,
 	}
 
-
 	InvalidTransaction = &types.Error{
 		Code:      InvalidTransactionError,
 		Message:   "invalid transaction data",

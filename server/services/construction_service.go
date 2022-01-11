@@ -158,10 +158,10 @@ func (s *ConstructionAPIServicer) ConstructionHash(
 
 func (s *ConstructionAPIServicer) ConstructionMetadata(
 	ctx context.Context,
-	request  *types.ConstructionMetadataRequest,
+	request *types.ConstructionMetadataRequest,
 ) (*types.ConstructionMetadataResponse, *types.Error) {
 
-	if request.NetworkIdentifier ==nil  {
+	if request.NetworkIdentifier == nil {
 		return nil, errors.NoNetworkIdentifier
 	}
 	if !CheckNetwork(request.NetworkIdentifier) {
@@ -180,14 +180,14 @@ func (s *ConstructionAPIServicer) ConstructionMetadata(
 		return nil, errors.BlockNotExist
 	}
 
-	var metadata     map[string]interface{}
+	var metadata map[string]interface{}
 	metadata["recent_block_hash"] = blockInfo.Hash
 	return &types.ConstructionMetadataResponse{
-		Metadata:metadata,
+		Metadata: metadata,
 		SuggestedFee: []*types.Amount{
-				&types.Amount {
-					Value:"100", //MinTransactionFee: 100,
-					Currency:	 &types.Currency{
+			&types.Amount{
+				Value: "100", //MinTransactionFee: 100,
+				Currency: &types.Currency{
 					Symbol:   base.MainnetCurrencySymbol,
 					Decimals: 8,
 					Metadata: nil,
