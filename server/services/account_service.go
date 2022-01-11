@@ -136,7 +136,7 @@ func (s *AccountAPIService) AccountCoins(
 		return nil, errors.GetUnspentUtxoFailed
 	}
 
-	var coinsSlice []*types.Coin
+	coinsSlice := make([]*types.Coin,len(utxoInfoSlice))
 	for _, utxoInfo := range utxoInfoSlice {
 		value, err := common.StringToFixed64(utxoInfo.Amount)
 		if err != nil {
