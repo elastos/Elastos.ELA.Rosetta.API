@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
@@ -70,8 +71,11 @@ func (s *NetworkAPIService) NetworkStatus(
 		return nil, errors.GetNeighborsFailed
 	}
 
-	peers := make([]*types.Peer, 0, len(neighbors))
+	peers := make([]*types.Peer, 0)
 	for _, n := range neighbors {
+		if !strings.Contains(n, "ela") {
+			continue
+		}
 		peer := types.Peer{
 			PeerID: n,
 		}
