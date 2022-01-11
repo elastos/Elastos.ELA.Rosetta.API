@@ -44,6 +44,8 @@ const (
 	InvalidCoinIdentifierError
 	InvalidOperationAmountError
 	InvalidOperationAccountAddressError
+	InvalidAmountError
+	InvalidAccountIdentifierError
 )
 
 var (
@@ -62,7 +64,7 @@ var (
 	GetCurrentBlockFailed = &types.Error{
 		Code:      GetCurrentBlockError,
 		Message:   "failed to get current block height",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	GetCurrentHeightFailed = &types.Error{
@@ -74,19 +76,19 @@ var (
 	BlockNotExist = &types.Error{
 		Code:      BlockNotExistError,
 		Message:   "failed to get block by rpc",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	GetNeighborsFailed = &types.Error{
 		Code:      GetNeighborsError,
 		Message:   "failed to get neighbors",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	GetNodeStateFailed = &types.Error{
 		Code:      GetNodeStateError,
 		Message:   "failed to get node state",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	GetMempoolFailed = &types.Error{
@@ -110,7 +112,7 @@ var (
 	UnsupportNetwork = &types.Error{
 		Code:      UnsupportNetworkError,
 		Message:   "unsupport network",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	InvalidTransaction = &types.Error{
@@ -198,6 +200,17 @@ var (
 		Message:   "invalid operation address",
 		Retriable: false,
 	}
+	InvalidAmount = &types.Error{
+		Code:      InvalidAmountError,
+		Message:   "invalid amount",
+		Retriable: false,
+	}
+
+	InvalidAccountIdentifier = &types.Error{
+		Code:      InvalidAccountIdentifierError,
+		Message:   "invalid account identifier",
+		Retriable: false,
+	}
 )
 
 var APIErrorMap = []*types.Error{
@@ -226,4 +239,6 @@ var APIErrorMap = []*types.Error{
 	InvalidCoinIdentifier,
 	InvalidOperationAmount,
 	InvalidOperationAccountAddress,
+	InvalidAmount,
+	InvalidAccountIdentifier,
 }
