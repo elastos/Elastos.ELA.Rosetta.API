@@ -104,7 +104,7 @@ func (s *AccountAPIService) AccountCoins(
 	request *types.AccountCoinsRequest,
 ) (*types.AccountCoinsResponse, *types.Error) {
 
-	if request.NetworkIdentifier ==nil  {
+	if request.NetworkIdentifier == nil {
 		return nil, errors.NoNetworkIdentifier
 	}
 
@@ -136,7 +136,7 @@ func (s *AccountAPIService) AccountCoins(
 		return nil, errors.GetUnspentUtxoFailed
 	}
 
-	coinsSlice := make([]*types.Coin,len(utxoInfoSlice))
+	coinsSlice := make([]*types.Coin, 0, len(utxoInfoSlice))
 	for _, utxoInfo := range utxoInfoSlice {
 		value, err := common.StringToFixed64(utxoInfo.Amount)
 		if err != nil {
@@ -144,7 +144,7 @@ func (s *AccountAPIService) AccountCoins(
 		}
 		coin := &types.Coin{
 			CoinIdentifier: &types.CoinIdentifier{
-				Identifier: GetCoinIdentifierByHashStr(utxoInfo.Txid, uint16(utxoInfo.VOut)) ,
+				Identifier: GetCoinIdentifierByHashStr(utxoInfo.Txid, uint16(utxoInfo.VOut)),
 			},
 			Amount: &types.Amount{
 				Value: GetSelaString(*value),
