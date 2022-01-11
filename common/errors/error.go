@@ -46,6 +46,7 @@ const (
 	InvalidOperationAccountAddressError
 	InvalidAmountError
 	InvalidAccountIdentifierError
+	NetworkIdentifierError
 )
 
 var (
@@ -114,6 +115,13 @@ var (
 		Message:   "unsupport network",
 		Retriable: true,
 	}
+
+	NoNetworkIdentifier = &types.Error{
+		Code:      NetworkIdentifierError,
+		Message:   "must have NetworkIdentifier",
+		Retriable: false,
+	}
+
 
 	InvalidTransaction = &types.Error{
 		Code:      InvalidTransactionError,

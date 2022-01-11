@@ -10,9 +10,6 @@ import (
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
-
-	"github.com/coinbase/rosetta-sdk-go/server"
-	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/elastos/Elastos.ELA/common"
 	config2 "github.com/elastos/Elastos.ELA/common/config"
 	contract2 "github.com/elastos/Elastos.ELA/core/contract"
@@ -20,6 +17,9 @@ import (
 	elatypes "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
+
+	"github.com/coinbase/rosetta-sdk-go/server"
+	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
 // ConstructionAPIServicer implements the server.ConstructionAPIServicer interface.
@@ -157,16 +157,56 @@ func (s *ConstructionAPIServicer) ConstructionHash(
 }
 
 func (s *ConstructionAPIServicer) ConstructionMetadata(
-	context.Context,
-	*types.ConstructionMetadataRequest,
+	ctx context.Context,
+	request  *types.ConstructionMetadataRequest,
 ) (*types.ConstructionMetadataResponse, *types.Error) {
-	return nil, nil
+
+	if request.NetworkIdentifier ==nil  {
+		return nil, errors.NoNetworkIdentifier
+	}
+	if !CheckNetwork(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
+	currentHeight, err := rpc.GetCurrentHeight(config.Parameters.MainNodeRPC)
+	if err != nil {
+		log.Printf("GetCurrentHeight err: %s\n", err.Error())
+		return nil, errors.GetCurrentBlockFailed
+	}
+
+	blockInfo, err := rpc.GetBlockByHeight(currentHeight, config.Parameters.MainNodeRPC)
+	if err != nil {
+		log.Printf("GetBlockByHeight err: %s\n", err.Error())
+		return nil, errors.BlockNotExist
+	}
+
+	var metadata     map[string]interface{}
+	metadata["recent_block_hash"] = blockInfo.Hash
+	return &types.ConstructionMetadataResponse{
+		Metadata:metadata,
+		SuggestedFee: []*types.Amount{
+				&types.Amount {
+					Value:"100", //MinTransactionFee: 100,
+					Currency:	 &types.Currency{
+					Symbol:   base.MainnetCurrencySymbol,
+					Decimals: 8,
+					Metadata: nil,
+				},
+				Metadata: nil,
+			},
+		},
+	}, nil
 }
 
 func (s *ConstructionAPIServicer) ConstructionParse(
-	context.Context,
-	*types.ConstructionParseRequest,
+	ctx context.Context,
+	request *types.ConstructionParseRequest,
 ) (*types.ConstructionParseResponse, *types.Error) {
+	if !CheckNetwork(request.NetworkIdentifier) {
+		log.Printf("unsupport network")
+		return nil, errors.UnsupportNetwork
+	}
+
 	return nil, nil
 }
 

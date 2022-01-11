@@ -2,14 +2,13 @@ package services
 
 import (
 	"context"
-	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
-	"github.com/elastos/Elastos.ELA/common"
 	"log"
-	"strconv"
 
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
+	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -104,10 +103,19 @@ func (s *AccountAPIService) AccountCoins(
 	ctx context.Context,
 	request *types.AccountCoinsRequest,
 ) (*types.AccountCoinsResponse, *types.Error) {
+
+	if request.NetworkIdentifier ==nil  {
+		return nil, errors.NoNetworkIdentifier
+	}
+
 	if !CheckNetwork(request.NetworkIdentifier) {
 		log.Printf("unsupport network")
 		return nil, errors.UnsupportNetwork
 	}
+	if request.AccountIdentifier == nil {
+		return nil, errors.InvalidAccountIdentifier
+	}
+
 	currentHeight, err := rpc.GetCurrentHeight(config.Parameters.MainNodeRPC)
 	if err != nil {
 		log.Printf("GetCurrentHeight err: %s\n", err.Error())
@@ -130,12 +138,21 @@ func (s *AccountAPIService) AccountCoins(
 
 	var coinsSlice []*types.Coin
 	for _, utxoInfo := range utxoInfoSlice {
+		value, err := common.StringToFixed64(utxoInfo.Amount)
+		if err != nil {
+			return nil, errors.InvalidAmount
+		}
 		coin := &types.Coin{
 			CoinIdentifier: &types.CoinIdentifier{
-				Identifier: utxoInfo.Txid + strconv.Itoa(int(utxoInfo.VOut)),
+				Identifier: GetCoinIdentifierByHashStr(utxoInfo.Txid, uint16(utxoInfo.VOut)) ,
 			},
 			Amount: &types.Amount{
-				Value: utxoInfo.Amount,
+				Value: GetSelaString(*value),
+				Currency: &types.Currency{
+					Symbol:   base.MainnetCurrencySymbol,
+					Decimals: 8,
+					Metadata: nil,
+				},
 			},
 		}
 		coinsSlice = append(coinsSlice, coin)
