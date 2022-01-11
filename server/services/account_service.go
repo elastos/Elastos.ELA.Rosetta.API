@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
+	"github.com/elastos/Elastos.ELA/common"
 	"log"
 	"strconv"
 
@@ -11,7 +13,6 @@ import (
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
-
 )
 
 // AccountAPIService implements the server.AccountAPIServicer interface.
@@ -26,7 +27,6 @@ func NewAccounAPIService(network *types.NetworkIdentifier) server.AccountAPIServ
 	}
 }
 
-
 func (s *AccountAPIService) AccountBalance(
 	ctx context.Context,
 	request *types.AccountBalanceRequest,
@@ -36,24 +36,63 @@ func (s *AccountAPIService) AccountBalance(
 		return nil, errors.UnsupportNetwork
 	}
 
+	if request.AccountIdentifier == nil {
+		return nil, errors.InvalidAccountIdentifier
+	}
+
 	balance, err := rpc.GetReceivedByAddress(request.AccountIdentifier.Address, config.Parameters.MainNodeRPC)
 	if err != nil {
 		errStr := err.Error()
 		log.Printf("err: %s\n", errStr)
 		return nil, errors.GetAddressBalanceFailed
 	}
-	log.Printf("Address %s balance: %v\n",request.AccountIdentifier.Address, balance)
+	b, err := common.StringToFixed64(balance)
+	if err != nil {
+		return nil, errors.InvalidAmount
+	}
+	log.Printf("Address %s balance: %v\n", request.AccountIdentifier.Address, balance)
 
 	var amountSlice []*types.Amount
+
 	amount := &types.Amount{
-		Value: balance,
+		Value: GetSelaString(*b),
+		Currency: &types.Currency{
+			Symbol:   base.MainnetCurrencySymbol,
+			Decimals: 8,
+			Metadata: nil,
+		},
 	}
 	amountSlice = append(amountSlice, amount)
+
+	currentHeight, err := rpc.GetCurrentHeight(config.Parameters.MainNodeRPC)
+	if err != nil {
+		log.Printf("GetCurrentHeight err: %s\n", err.Error())
+		return nil, errors.GetCurrentBlockFailed
+	}
+
+	blockInfo, err := rpc.GetBlockByHeight(currentHeight, config.Parameters.MainNodeRPC)
+	if err != nil {
+		log.Printf("GetBlockByHeight err: %s\n", err.Error())
+		return nil, errors.BlockNotExist
+	}
+
+	if request.BlockIdentifier == nil {
+		return &types.AccountBalanceResponse{
+			BlockIdentifier: &types.BlockIdentifier{
+				// This is also known as the block height.
+				Index: int64(currentHeight),
+				Hash:  blockInfo.Hash,
+			},
+			Balances: amountSlice,
+			Metadata: nil,
+		}, nil
+	}
+	// todo support blockIdentifier
 	return &types.AccountBalanceResponse{
 		BlockIdentifier: &types.BlockIdentifier{
 			// This is also known as the block height.
-			Index :*request.BlockIdentifier.Index,
-			Hash  :*request.BlockIdentifier.Hash,
+			Index: int64(currentHeight),
+			Hash:  blockInfo.Hash,
 		},
 		Balances: amountSlice,
 		Metadata: nil,
@@ -92,19 +131,19 @@ func (s *AccountAPIService) AccountCoins(
 	var coinsSlice []*types.Coin
 	for _, utxoInfo := range utxoInfoSlice {
 		coin := &types.Coin{
-			CoinIdentifier:&types.CoinIdentifier{
-				Identifier:utxoInfo.Txid+ strconv.Itoa(int(utxoInfo.VOut)) ,
+			CoinIdentifier: &types.CoinIdentifier{
+				Identifier: utxoInfo.Txid + strconv.Itoa(int(utxoInfo.VOut)),
 			},
-			Amount:&types.Amount{
+			Amount: &types.Amount{
 				Value: utxoInfo.Amount,
-			} ,
+			},
 		}
 		coinsSlice = append(coinsSlice, coin)
 	}
 	return &types.AccountCoinsResponse{
-		BlockIdentifier:&types.BlockIdentifier{
+		BlockIdentifier: &types.BlockIdentifier{
 			Index: int64(blockInfo.Height),
-			Hash: blockInfo.Hash,
+			Hash:  blockInfo.Hash,
 		},
 		Coins:    coinsSlice,
 		Metadata: nil,
