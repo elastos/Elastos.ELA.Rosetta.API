@@ -88,7 +88,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 		outpusCount := len(tx.Outputs)
 		for i, input := range tx.Inputs {
 			referTransactionHash := input.Previous.TxID
-			referTransaction, err := rpc.GetTransaction(input.Previous.TxID.String(), config.Parameters.MainNodeRPC)
+			referTransaction, err := rpc.GetTransaction(common.ToReversedString(input.Previous.TxID), config.Parameters.MainNodeRPC)
 			if err != nil {
 				return nil, errors.TransactionNotExist
 			}
