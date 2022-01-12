@@ -76,7 +76,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 			},
 			CoinChange: &types.CoinChange{
 				CoinIdentifier: &types.CoinIdentifier{
-					Identifier: GetCoinIdentifier(tx.Hash(), uint16(i)),
+					Identifier: GetCoinIdentifierByHashStr(common.ToReversedString(tx.Hash()), uint16(i)),
 				},
 				CoinAction: types.CoinCreated,
 			},
@@ -243,9 +243,10 @@ func GetRosettaTransaction(tx *types2.Transaction) (*types.Transaction, *types.E
 	if e != nil {
 		return nil, e
 	}
+
 	return &types.Transaction{
 		TransactionIdentifier: &types.TransactionIdentifier{
-			Hash: tx.Hash().String(),
+			Hash: common.ToReversedString(tx.Hash()),
 		},
 		Operations:          operations,
 		RelatedTransactions: nil,
@@ -285,11 +286,11 @@ func GetRosettaBlock(block *types2.Block) (*types.Block, *types.Error) {
 	return &types.Block{
 		BlockIdentifier: &types.BlockIdentifier{
 			Index: int64(block.Height),
-			Hash:  block.Hash().String(),
+			Hash:  common.ToReversedString(block.Hash()),
 		},
 		ParentBlockIdentifier: &types.BlockIdentifier{
 			Index: previousBlockIndex,
-			Hash:  block.Previous.String(),
+			Hash:  common.ToReversedString(block.Previous),
 		},
 		Timestamp:    GetRosettaTimestamp(block.Timestamp),
 		Transactions: txs,

@@ -150,7 +150,7 @@ func (s *ConstructionAPIServicer) ConstructionHash(
 
 	return &types.TransactionIdentifierResponse{
 		TransactionIdentifier: &types.TransactionIdentifier{
-			Hash: txn.Hash().String(),
+			Hash: common.ToReversedString(txn.Hash()),
 		},
 		Metadata: nil,
 	}, nil

@@ -47,6 +47,7 @@ const (
 	InvalidAmountError
 	InvalidAccountIdentifierError
 	NetworkIdentifierError
+	InvalidTransactionHashError
 )
 
 var (
@@ -212,11 +213,15 @@ var (
 		Message:   "invalid amount",
 		Retriable: false,
 	}
-
 	InvalidAccountIdentifier = &types.Error{
 		Code:      InvalidAccountIdentifierError,
 		Message:   "invalid account identifier",
 		Retriable: false,
+	}
+	InvalidTransactionHash = &types.Error{
+		Code:        InvalidTransactionHashError,
+		Message:     "invalid transaction hash",
+		Retriable:   false,
 	}
 )
 
@@ -248,4 +253,5 @@ var APIErrorMap = []*types.Error{
 	InvalidOperationAccountAddress,
 	InvalidAmount,
 	InvalidAccountIdentifier,
+	InvalidTransactionHash,
 }
