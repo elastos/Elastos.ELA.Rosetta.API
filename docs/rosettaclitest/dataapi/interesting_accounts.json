@@ -1,0 +1,11 @@
+[
+  {
+    "account_identifier": {
+      "address":"EWEzHxxHewc5w2nRMsn9Q7PFCs2V9cuaZ9"
+    },
+    "currency": {
+      "symbol": "ELA",
+      "decimals": 8
+    }
+  }
+]

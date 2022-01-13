@@ -5,22 +5,40 @@
  },
  "online_url": "http://localhost:8080",
  "data_directory": "",
- "http_timeout": 10,
- "tip_delay": 300,
- "data": {
-  "reconciliation_disabled": true,
-  "inactive_discrepancy_search_disabled": true,
-  "balance_tracking_disabled": true,
-  "end_conditions": {
-   "tip": true
-  }
- },
- "construction": {
-  "stale_depth": 3,
-  "broadcast_limit": 5,
-  "constructor_dsl_file": "test.ros",
-  "end_conditions": {
-   "create_account": 1
+ "http_timeout": 1000,
+ "tip_delay": 3000000000000000,
+ "max_retries": 3,
+ "data":{
+  "active_reconciliation_concurrency":1,
+  "inactive_reconciliation_concurrency":1,
+  "inactive_reconciliation_frequency":6,
+  "log_blocks":true,
+  "log_transactions":true,
+  "log_balance_changes":true,
+  "log_reconciliations":true,
+  "ignore_reconciliation_error":false,
+  "exempt_accounts":"",
+  "bootstrap_balances":"",
+  "historical_balance_enabled":false,
+  "interesting_accounts":"interesting_accounts.json",
+  "reconciliation_disabled":false,
+  "reconciliation_drain_disabled":false,
+  "inactive_discrepancy_search_disabled":false,
+  "balance_tracking_disabled":false,
+  "coin_tracking_disabled":false,
+  "start_index":0,
+  "status_port":9090,
+  "results_output_file":"data_test_results.txt",
+  "pruning_disabled":false,
+  "pruning_frequency":100,
+  "initial_balance_fetch_disabled":false,
+  "reconciler_active_backlog":50,
+  "end_conditions":{
+   "reconciliation_coverage":{
+    "coverage":1.0,
+    "from_tip":true,
+    "tip":true
+   }
   }
  }
 }
