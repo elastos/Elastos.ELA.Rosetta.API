@@ -111,7 +111,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 					Metadata:   nil,
 				},
 				Amount: &types.Amount{
-					Value: GetSelaString(referTransaction.Outputs[input.Previous.Index].Value),
+					Value: GetSelaString(-referTransaction.Outputs[input.Previous.Index].Value),
 					Currency: &types.Currency{
 						Symbol:   base.MainnetCurrencySymbol,
 						Decimals: base.MainnetCurrencyDecimal,
@@ -216,7 +216,7 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 					Metadata:   nil,
 				},
 				Amount: &types.Amount{
-					Value: GetSelaString(referTransaction.Outputs[input.VOut].Value),
+					Value: GetSelaString(-referTransaction.Outputs[input.VOut].Value),
 					Currency: &types.Currency{
 						Symbol:   base.MainnetCurrencySymbol,
 						Decimals: base.MainnetCurrencyDecimal,
