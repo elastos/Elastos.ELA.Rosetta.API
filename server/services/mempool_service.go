@@ -76,5 +76,5 @@ func (s *MempoolAPIService) MempoolTransaction(
 		}
 	}
 
-	return &types.MempoolTransactionResponse{}, nil
+	return nil, errors.TransactionNotExist
 }
