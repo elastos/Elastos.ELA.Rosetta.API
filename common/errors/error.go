@@ -40,6 +40,7 @@ const (
 	SignatureTypeError
 	PublishTransactionError
 	InvalidCoinChangeError
+	InvalidCoinChangeActionError
 	InvalidOperationIdentifierError
 	InvalidCoinIdentifierError
 	InvalidOperationAmountError
@@ -188,6 +189,11 @@ var (
 		Message:   "operation must have coin change",
 		Retriable: false,
 	}
+	InvalidCoinChangeAction = &types.Error{
+		Code:      InvalidCoinChangeActionError,
+		Message:   "invalid coin change action",
+		Retriable: false,
+	}
 	InvalidOperationIdentifier = &types.Error{
 		Code:      InvalidOperationIdentifierError,
 		Message:   "operation has no operation identifier",
@@ -219,9 +225,9 @@ var (
 		Retriable: false,
 	}
 	InvalidTransactionHash = &types.Error{
-		Code:        InvalidTransactionHashError,
-		Message:     "invalid transaction hash",
-		Retriable:   false,
+		Code:      InvalidTransactionHashError,
+		Message:   "invalid transaction hash",
+		Retriable: false,
 	}
 )
 
@@ -247,6 +253,7 @@ var APIErrorMap = []*types.Error{
 	InvalidSignatureType,
 	PublishTransactionFailed,
 	InvalidCoinChange,
+	InvalidCoinChangeAction,
 	InvalidOperationIdentifier,
 	InvalidCoinIdentifier,
 	InvalidOperationAmount,

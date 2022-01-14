@@ -5,11 +5,16 @@ import (
 	"context"
 	"encoding/hex"
 	"log"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+
+	"github.com/coinbase/rosetta-sdk-go/server"
+	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/elastos/Elastos.ELA/common"
 	config2 "github.com/elastos/Elastos.ELA/common/config"
 	contract2 "github.com/elastos/Elastos.ELA/core/contract"
@@ -17,9 +22,6 @@ import (
 	elatypes "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
-
-	"github.com/coinbase/rosetta-sdk-go/server"
-	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
 // ConstructionAPIServicer implements the server.ConstructionAPIServicer interface.
@@ -180,7 +182,7 @@ func (s *ConstructionAPIServicer) ConstructionMetadata(
 		return nil, errors.BlockNotExist
 	}
 
-	var metadata map[string]interface{}
+	metadata := make(map[string]interface{}, 0)
 	metadata["recent_block_hash"] = blockInfo.Hash
 	return &types.ConstructionMetadataResponse{
 		Metadata: metadata,
@@ -245,7 +247,7 @@ func (s *ConstructionAPIServicer) ConstructionPayloads(
 	inputs := make([]*elatypes.Input, 0)
 	outputs := make([]*elatypes.Output, 0)
 	for _, opr := range request.Operations {
-		if opr.CoinChange == nil || opr.CoinChange.CoinIdentifier == nil {
+		if opr.CoinChange != nil && opr.CoinChange.CoinIdentifier == nil {
 			return nil, errors.InvalidCoinChange
 		}
 		if opr.OperationIdentifier == nil {
@@ -255,10 +257,16 @@ func (s *ConstructionAPIServicer) ConstructionPayloads(
 			return nil, errors.InvalidOperationAmount
 		}
 
-		switch opr.CoinChange.CoinAction {
-		case types.CoinSpent:
-			txidStr := opr.CoinChange.CoinIdentifier.Identifier
-			txid, err := common.Uint256FromHexString(txidStr)
+		if opr.CoinChange != nil {
+			if opr.CoinChange.CoinAction != types.CoinSpent {
+				return nil, errors.InvalidCoinChangeAction
+			}
+			coinIDStr := opr.CoinChange.CoinIdentifier.Identifier
+			strs := strings.Split(coinIDStr, ":")
+			if len(strs) != 2 {
+				return nil, errors.InvalidCoinIdentifier
+			}
+			txid, err := common.Uint256FromHexString(strs[0])
 			if err != nil {
 				return nil, errors.InvalidCoinIdentifier
 			}
@@ -269,10 +277,10 @@ func (s *ConstructionAPIServicer) ConstructionPayloads(
 				},
 				Sequence: 0,
 			})
-		case types.CoinCreated:
-			amount, err := common.StringToFixed64(opr.Amount.Value)
-			if err != nil {
-				return nil, errors.InvalidOperationAmount
+		} else {
+			amount, e := getPositiveAmountFromString(opr.Amount.Value)
+			if e != nil {
+				return nil, e
 			}
 			addr, err := common.Uint168FromAddress(opr.Account.Address)
 			if err != nil {
@@ -280,8 +288,9 @@ func (s *ConstructionAPIServicer) ConstructionPayloads(
 			}
 			outputs = append(outputs, &elatypes.Output{
 				AssetID:     config2.ELAAssetID,
-				Value:       *amount,
+				Value:       amount,
 				ProgramHash: *addr,
+				Payload:     &outputpayload.DefaultOutput{},
 			})
 		}
 	}
@@ -319,7 +328,35 @@ func (s *ConstructionAPIServicer) ConstructionPreprocess(
 		return nil, errors.UnsupportNetwork
 	}
 
-	return &types.ConstructionPreprocessResponse{}, nil
+	accounts := make([]*types.AccountIdentifier, 0)
+	accountsMap := make(map[string]struct{})
+	for _, opr := range request.Operations {
+		if opr.CoinChange != nil && opr.CoinChange.CoinIdentifier == nil {
+			return nil, errors.InvalidCoinChange
+		}
+		if opr.OperationIdentifier == nil {
+			return nil, errors.InvalidOperationIdentifier
+		}
+		if opr.Amount == nil {
+			return nil, errors.InvalidOperationAmount
+		}
+
+		if opr.CoinChange != nil {
+			if opr.CoinChange.CoinAction != types.CoinSpent {
+				return nil, errors.InvalidCoinChangeAction
+			}
+			if _, ok := accountsMap[opr.Account.Address]; !ok {
+				accounts = append(accounts, opr.Account)
+			} else {
+				accountsMap[opr.Account.Address] = struct{}{}
+			}
+		}
+	}
+
+	return &types.ConstructionPreprocessResponse{
+		Options:            nil,
+		RequiredPublicKeys: accounts,
+	}, nil
 }
 
 func (s *ConstructionAPIServicer) ConstructionSubmit(
