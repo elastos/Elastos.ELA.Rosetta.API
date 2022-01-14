@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
@@ -65,7 +66,7 @@ func (s *MempoolAPIService) MempoolTransaction(
 
 	for _, tx := range txContextInfo {
 		if tx.Hash == request.TransactionIdentifier.Hash {
-			rstx, e := GetRosettaTransactionByTxInfo(tx.TransactionInfo)
+			rstx, e := GetRosettaTransactionByTxInfo(tx.TransactionInfo, &base.MainnetDefaultStatus)
 			if e != nil {
 				return nil, e
 			}

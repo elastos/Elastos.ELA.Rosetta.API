@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
 	"log"
 	"strings"
@@ -52,7 +53,7 @@ func (s *ConstructionAPIServicer) ConstructionCombine(
 	}
 
 	var txn elatypes.Transaction
-	err = txn.Deserialize(bytes.NewReader(txUnsignedBytes))
+	err = txn.DeserializeUnsigned(bytes.NewReader(txUnsignedBytes))
 	if err != nil {
 		log.Printf("deserialize tx err: %s\n", err.Error())
 		return nil, errors.DeserializeTransactionFailed
@@ -83,7 +84,7 @@ func (s *ConstructionAPIServicer) ConstructionCombine(
 
 		var txProgram = &pg.Program{
 			Code:      redeemScript,
-			Parameter: sign.Bytes,
+			Parameter: getParameterBySignature(sign.Bytes),
 		}
 		txn.Programs = append(txn.Programs, txProgram)
 	}
@@ -219,18 +220,45 @@ func (s *ConstructionAPIServicer) ConstructionParse(
 	}
 
 	var txn elatypes.Transaction
-	err = txn.Deserialize(bytes.NewReader(txUnsignedBytes))
+	err = txn.DeserializeUnsigned(bytes.NewReader(txUnsignedBytes))
 	if err != nil {
 		log.Printf("deserialize tx err: %s\n", err.Error())
 		return nil, errors.DeserializeTransactionFailed
 	}
-	operations, e := GetOperations(&txn)
+	operations, e := GetOperations(&txn, &base.MainnetDefaultStatus)
 	if e != nil {
 		return nil, e
 	}
 	//todo sanity check
+
+	accounts := make([]*types.AccountIdentifier, 0)
+	if request.Signed == true {
+		accountsMap := make(map[string]struct{})
+		for _, opr := range operations {
+			if opr.CoinChange != nil && opr.CoinChange.CoinIdentifier == nil {
+				return nil, errors.InvalidCoinChange
+			}
+			if opr.OperationIdentifier == nil {
+				return nil, errors.InvalidOperationIdentifier
+			}
+			if opr.Amount == nil {
+				return nil, errors.InvalidOperationAmount
+			}
+
+			if opr.CoinChange != nil && opr.CoinChange.CoinAction == types.CoinSpent {
+				if _, ok := accountsMap[opr.Account.Address]; !ok {
+					accounts = append(accounts, opr.Account)
+				} else {
+					accountsMap[opr.Account.Address] = struct{}{}
+				}
+			}
+		}
+	}
+
 	return &types.ConstructionParseResponse{
-		Operations: operations,
+		Operations:               operations,
+		AccountIdentifierSigners: accounts,
+		Metadata:                 nil,
 	}, nil
 }
 
@@ -241,29 +269,6 @@ func (s *ConstructionAPIServicer) ConstructionPayloads(
 	if !CheckNetwork(request.NetworkIdentifier) {
 		log.Printf("unsupport network")
 		return nil, errors.UnsupportNetwork
-	}
-	payloads := make([]*types.SigningPayload, 0)
-	for _, p := range request.PublicKeys {
-		if p == nil {
-			return nil, errors.InvalidPublicKey
-		}
-		if err := checkCurveType(p.CurveType); err != nil {
-			return nil, err
-		}
-		addr, err := publicKeyToAddress(p.Bytes)
-		if err != nil {
-			return nil, err
-		}
-
-		payloads = append(payloads, &types.SigningPayload{
-			AccountIdentifier: &types.AccountIdentifier{
-				Address:    *addr,
-				SubAccount: nil,
-				Metadata:   nil,
-			},
-			Bytes:         p.Bytes,
-			SignatureType: types.Ecdsa,
-		})
 	}
 
 	inputs := make([]*elatypes.Input, 0)
@@ -288,7 +293,11 @@ func (s *ConstructionAPIServicer) ConstructionPayloads(
 			if len(strs) != 2 {
 				return nil, errors.InvalidCoinIdentifier
 			}
-			txid, err := common.Uint256FromHexString(strs[0])
+			txidBytes, err := common.FromReversedString(strs[0])
+			if err != nil {
+				return nil, errors.InvalidCoinIdentifier
+			}
+			txid, err := common.Uint256FromBytes(txidBytes)
 			if err != nil {
 				return nil, errors.InvalidCoinIdentifier
 			}
@@ -330,9 +339,34 @@ func (s *ConstructionAPIServicer) ConstructionPayloads(
 	}
 
 	buf := new(bytes.Buffer)
-	if err := txn.Serialize(buf); err != nil {
+	if err := txn.SerializeUnsigned(buf); err != nil {
 		log.Printf("tx serialize err: %s\n", err.Error())
 		return nil, errors.InvalidTransaction
+	}
+
+	payloads := make([]*types.SigningPayload, 0)
+	for _, p := range request.PublicKeys {
+		if p == nil {
+			return nil, errors.InvalidPublicKey
+		}
+		if err := checkCurveType(p.CurveType); err != nil {
+			return nil, err
+		}
+		addr, err := publicKeyToAddress(p.Bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		sbytes := sha256.Sum256(buf.Bytes())
+		payloads = append(payloads, &types.SigningPayload{
+			AccountIdentifier: &types.AccountIdentifier{
+				Address:    *addr,
+				SubAccount: nil,
+				Metadata:   nil,
+			},
+			Bytes:         sbytes[:],
+			SignatureType: types.Ecdsa,
+		})
 	}
 
 	return &types.ConstructionPayloadsResponse{
