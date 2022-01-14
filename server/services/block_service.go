@@ -83,7 +83,6 @@ func (s *BlockAPIService) BlockTransaction(
 
 	tx, err := rpc.GetTransaction(request.TransactionIdentifier.Hash, config.Parameters.MainNodeRPC)
 	if err != nil {
-		log.Println("get transaction error:", err)
 		return nil, errors.TransactionNotExist
 	}
 

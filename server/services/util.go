@@ -90,6 +90,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 			referTransactionHash := input.Previous.TxID
 			referTransaction, err := rpc.GetTransaction(common.ToReversedString(input.Previous.TxID), config.Parameters.MainNodeRPC)
 			if err != nil {
+				log.Println("get transaction error:", err, "hash:", common.ToReversedString(input.Previous.TxID))
 				return nil, errors.TransactionNotExist
 			}
 			addr, err := referTransaction.Outputs[input.Previous.Index].ProgramHash.ToAddress()
@@ -195,6 +196,7 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 		for i, input := range tx.Inputs {
 			referTransaction, err := rpc.GetTransaction(input.TxID, config.Parameters.MainNodeRPC)
 			if err != nil {
+				log.Println("get transaction error:", err, "hash:", input.TxID)
 				return nil, errors.TransactionNotExist
 			}
 			addr, err := referTransaction.Outputs[input.VOut].ProgramHash.ToAddress()
@@ -357,4 +359,19 @@ func publicKeyToAddress(pkBytes []byte) (*string, *types.Error) {
 	}
 
 	return &addr, nil
+}
+
+func getPositiveAmountFromString(value string) (common.Fixed64, *types.Error) {
+	amount, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, errors.InvalidOperationAmount
+	}
+	var positiveAmount common.Fixed64
+	if amount < 0 {
+		positiveAmount = common.Fixed64(-amount)
+	} else {
+		positiveAmount = common.Fixed64(amount)
+	}
+
+	return positiveAmount, nil
 }
