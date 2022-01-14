@@ -204,12 +204,34 @@ func (s *ConstructionAPIServicer) ConstructionParse(
 	ctx context.Context,
 	request *types.ConstructionParseRequest,
 ) (*types.ConstructionParseResponse, *types.Error) {
+	if request.NetworkIdentifier == nil {
+		return nil, errors.NoNetworkIdentifier
+	}
 	if !CheckNetwork(request.NetworkIdentifier) {
 		log.Printf("unsupport network")
 		return nil, errors.UnsupportNetwork
 	}
 
-	return nil, nil
+	txUnsignedBytes, err := hex.DecodeString(request.Transaction)
+	if err != nil {
+		log.Printf("decode tx from hexstring err: %s\n", err.Error())
+		return nil, errors.DecodeTransactionFailed
+	}
+
+	var txn elatypes.Transaction
+	err = txn.Deserialize(bytes.NewReader(txUnsignedBytes))
+	if err != nil {
+		log.Printf("deserialize tx err: %s\n", err.Error())
+		return nil, errors.DeserializeTransactionFailed
+	}
+	operations, e := GetOperations(&txn)
+	if e != nil {
+		return nil, e
+	}
+	//todo sanity check
+	return &types.ConstructionParseResponse{
+		Operations: operations,
+	}, nil
 }
 
 func (s *ConstructionAPIServicer) ConstructionPayloads(
