@@ -63,7 +63,7 @@ func (s *BlockAPIService) Block(
 		}
 	}
 
-	rsBlock, rsError := GetRosettaBlockByBlockInfo(block)
+	rsBlock, rsError := GetRosettaBlockByBlockInfo(block, &base.MainnetStatus)
 	if rsError != nil {
 		return nil, rsError
 	}
@@ -86,7 +86,7 @@ func (s *BlockAPIService) BlockTransaction(
 		return nil, errors.TransactionNotExist
 	}
 
-	rstx, e := GetRosettaTransaction(tx)
+	rstx, e := GetRosettaTransaction(tx, &base.MainnetStatus)
 	if e != nil {
 		return nil, e
 	}

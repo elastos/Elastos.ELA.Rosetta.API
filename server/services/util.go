@@ -43,7 +43,7 @@ func CheckNetwork(network *types.NetworkIdentifier) bool {
 	return false
 }
 
-func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
+func GetOperations(tx *types2.Transaction, status *string) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
 
 	for i, output := range tx.Outputs {
@@ -59,7 +59,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 			},
 			RelatedOperations: nil,
 			Type:              base.MainnetNextworkType,
-			Status:            &base.MainnetStatus,
+			Status:            status,
 			Account: &types.AccountIdentifier{
 				Address:    addr,
 				SubAccount: nil,
@@ -105,7 +105,7 @@ func GetOperations(tx *types2.Transaction) ([]*types.Operation, *types.Error) {
 				},
 				RelatedOperations: nil,
 				Type:              base.MainnetNextworkType,
-				Status:            &base.MainnetStatus,
+				Status:            status,
 				Account: &types.AccountIdentifier{
 					Address:    addr,
 					SubAccount: nil,
@@ -148,7 +148,7 @@ func GetReversedString(txid string) (*string, error) {
 	return &reversedTxid, nil
 }
 
-func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *types.Error) {
+func GetOperationsByTxInfo(tx *servers.TransactionInfo, status *string) ([]*types.Operation, *types.Error) {
 	operations := make([]*types.Operation, 0)
 
 	// record output index first, then record input index
@@ -166,7 +166,7 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 			},
 			RelatedOperations: nil,
 			Type:              base.MainnetNextworkType,
-			Status:            &base.MainnetStatus,
+			Status:            status,
 			Account: &types.AccountIdentifier{
 				Address:    addr,
 				SubAccount: nil,
@@ -211,7 +211,7 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 				},
 				RelatedOperations: nil,
 				Type:              base.MainnetNextworkType,
-				Status:            &base.MainnetStatus,
+				Status:            status,
 				Account: &types.AccountIdentifier{
 					Address:    addr,
 					SubAccount: nil,
@@ -240,8 +240,8 @@ func GetOperationsByTxInfo(tx *servers.TransactionInfo) ([]*types.Operation, *ty
 	return operations, nil
 }
 
-func GetRosettaTransaction(tx *types2.Transaction) (*types.Transaction, *types.Error) {
-	operations, e := GetOperations(tx)
+func GetRosettaTransaction(tx *types2.Transaction, status *string) (*types.Transaction, *types.Error) {
+	operations, e := GetOperations(tx, status)
 	if e != nil {
 		return nil, e
 	}
@@ -256,8 +256,8 @@ func GetRosettaTransaction(tx *types2.Transaction) (*types.Transaction, *types.E
 	}, nil
 }
 
-func GetRosettaTransactionByTxInfo(tx *servers.TransactionInfo) (*types.Transaction, *types.Error) {
-	operations, e := GetOperationsByTxInfo(tx)
+func GetRosettaTransactionByTxInfo(tx *servers.TransactionInfo, status *string) (*types.Transaction, *types.Error) {
+	operations, e := GetOperationsByTxInfo(tx, status)
 	if e != nil {
 		return nil, e
 	}
@@ -271,10 +271,10 @@ func GetRosettaTransactionByTxInfo(tx *servers.TransactionInfo) (*types.Transact
 	}, nil
 }
 
-func GetRosettaBlock(block *types2.Block) (*types.Block, *types.Error) {
+func GetRosettaBlock(block *types2.Block, status *string) (*types.Block, *types.Error) {
 	var txs []*types.Transaction
 	for _, t := range block.Transactions {
-		rstx, e := GetRosettaTransaction(t)
+		rstx, e := GetRosettaTransaction(t, status)
 		if e != nil {
 			return nil, e
 		}
@@ -300,7 +300,7 @@ func GetRosettaBlock(block *types2.Block) (*types.Block, *types.Error) {
 	}, nil
 }
 
-func GetRosettaBlockByBlockInfo(block *base.BlockInfo) (*types.Block, *types.Error) {
+func GetRosettaBlockByBlockInfo(block *base.BlockInfo, status *string) (*types.Block, *types.Error) {
 	txs := make([]*types.Transaction, 0)
 	for _, t := range block.Tx {
 		bytes, _ := json.Marshal(t)
@@ -310,7 +310,7 @@ func GetRosettaBlockByBlockInfo(block *base.BlockInfo) (*types.Block, *types.Err
 			log.Printf("invalid transaction context %v", t)
 			return nil, errors.InvalidTransaction
 		}
-		rstx, e := GetRosettaTransactionByTxInfo(txInfo.TransactionInfo)
+		rstx, e := GetRosettaTransactionByTxInfo(txInfo.TransactionInfo, status)
 		if e != nil {
 			return nil, e
 		}
@@ -374,4 +374,11 @@ func getPositiveAmountFromString(value string) (common.Fixed64, *types.Error) {
 	}
 
 	return positiveAmount, nil
+}
+
+func getParameterBySignature(signature []byte) []byte {
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(signature)))
+	buf.Write(signature)
+	return buf.Bytes()
 }

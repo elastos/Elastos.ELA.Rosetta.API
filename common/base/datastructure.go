@@ -8,6 +8,7 @@ import (
 
 var MainnetNetworkIndex int64 = 0
 var MainnetStatus = "Success"
+var MainnetDefaultStatus = ""
 
 const BlockChainName = "Elastos"
 const MainnetSignatureType = "ecdsa"
