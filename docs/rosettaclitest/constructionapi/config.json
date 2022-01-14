@@ -5,8 +5,10 @@
  },
  "online_url": "http://localhost:8080",
  "data_directory": "",
- "http_timeout": 10,
- "tip_delay": 300,
+ "http_timeout": 1200,
+ "max_retries": 100,
+ "max_sync_concurrency": 64,
+ "tip_delay": 3000000000000000,
  "data": {
   "reconciliation_disabled": true,
   "inactive_discrepancy_search_disabled": true,
@@ -21,6 +23,27 @@
   "constructor_dsl_file": "test.ros",
   "end_conditions": {
    "create_account": 1
-  }
+  },
+  "prefunded_accounts": [{
+   "privkey": "795e01b0b6bcee2909fb7c5863f3f523fcc9f3fa0b950368817c43873579189d",
+   "account_identifier": {
+    "address": "EWEzHxxHewc5w2nRMsn9Q7PFCs2V9cuaZ9"
+   },
+   "curve_type": "secp256r1",
+   "currency": {
+    "symbol": "ELA",
+    "decimals": 8
+   }},
+   {
+    "privkey": "e8441008dee2a94bf6c2e6987725028a46da5a54d1f8b917eba70fb7e9c77e93",
+    "account_identifier": {
+     "address": "EYS3AZjANKEvdXJQqrVsr9HiSJdKtZqmL2"
+    },
+    "curve_type": "secp256r1",
+    "currency": {
+     "symbol": "ELA",
+     "decimals": 8
+    }
+   }]
  }
 }
