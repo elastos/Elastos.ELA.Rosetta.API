@@ -346,7 +346,7 @@ func checkCurveType(curveType types.CurveType) *types.Error {
 func publicKeyToAddress(pkBytes []byte) (*string, *types.Error) {
 	pk, err := crypto.DecodePoint(pkBytes)
 	if err != nil {
-		return nil, errors.InvalidCurveType
+		return nil, errors.InvalidPublicKey
 	}
 	contract, err := contract2.CreateStandardContract(pk)
 	if err != nil {
