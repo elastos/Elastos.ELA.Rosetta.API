@@ -49,6 +49,7 @@ const (
 	InvalidAccountIdentifierError
 	NetworkIdentifierError
 	InvalidTransactionHashError
+	InvalidIncludeMempoolError
 )
 
 var (
@@ -229,6 +230,12 @@ var (
 		Message:   "invalid transaction hash",
 		Retriable: false,
 	}
+
+	InvalidIncludeMempool = &types.Error{
+		Code:      InvalidIncludeMempoolError,
+		Message:   "account/coins should set include_mempool to false",
+		Retriable: false,
+	}
 )
 
 var APIErrorMap = []*types.Error{
@@ -261,4 +268,5 @@ var APIErrorMap = []*types.Error{
 	InvalidAmount,
 	InvalidAccountIdentifier,
 	InvalidTransactionHash,
+	InvalidIncludeMempool,
 }
