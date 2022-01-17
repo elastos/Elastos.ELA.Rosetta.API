@@ -104,6 +104,10 @@ func (s *AccountAPIService) AccountCoins(
 	request *types.AccountCoinsRequest,
 ) (*types.AccountCoinsResponse, *types.Error) {
 
+	if request.IncludeMempool != false {
+		return nil, errors.InvalidIncludeMempool
+	}
+
 	if request.NetworkIdentifier == nil {
 		return nil, errors.NoNetworkIdentifier
 	}

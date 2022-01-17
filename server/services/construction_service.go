@@ -248,9 +248,8 @@ func (s *ConstructionAPIServicer) ConstructionParse(
 			if opr.CoinChange != nil && opr.CoinChange.CoinAction == types.CoinSpent {
 				if _, ok := accountsMap[opr.Account.Address]; !ok {
 					accounts = append(accounts, opr.Account)
-				} else {
-					accountsMap[opr.Account.Address] = struct{}{}
 				}
+				accountsMap[opr.Account.Address] = struct{}{}
 			}
 		}
 	}
@@ -403,9 +402,8 @@ func (s *ConstructionAPIServicer) ConstructionPreprocess(
 			}
 			if _, ok := accountsMap[opr.Account.Address]; !ok {
 				accounts = append(accounts, opr.Account)
-			} else {
-				accountsMap[opr.Account.Address] = struct{}{}
 			}
+			accountsMap[opr.Account.Address] = struct{}{}
 		}
 	}
 
