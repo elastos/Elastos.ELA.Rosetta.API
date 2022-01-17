@@ -65,8 +65,7 @@ If clone works successfully, you should see folder structure like Elastos.ELA.Ro
 
 ### 4. Run directly
 1. Run `make runserver`
-2. Run `make runclient` (in a new terminal window)
-3. Run `make runfetcher` (in a new terminal window)
+2. Run `make runfetcher` (in a new terminal window)
 
 ### 5. Build and run
 1.build all
@@ -77,11 +76,7 @@ make all
 ```shell script
 ./rs-server
 ```
-3.Run client
-```shell script
-./rs-client
-```
-4.Run fetcher
+3.Run fetcher
 ```shell script
 ./rs-fetcher
 ```
