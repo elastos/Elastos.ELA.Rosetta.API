@@ -20,6 +20,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/base"
@@ -314,10 +315,15 @@ func (s *ConstructionAPIServicer) ConstructionPayloads(
 			if err != nil {
 				return nil, errors.InvalidCoinIdentifier
 			}
+			index, err := strconv.Atoi(strs[1])
+			if err != nil {
+				return nil, errors.InvalidCoinIdentifier
+			}
+
 			inputs = append(inputs, &elatypes.Input{
 				Previous: elatypes.OutPoint{
 					TxID:  *txid,
-					Index: uint16(opr.OperationIdentifier.Index),
+					Index: uint16(index),
 				},
 				Sequence: 0,
 			})
