@@ -3,7 +3,6 @@ package client
 import (
 	"log"
 	"testing"
-	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -15,12 +14,12 @@ func init() {
 	Test_network(t)
 }
 
-func Test_RunTestMempoolInloop(t *testing.T) {
-	for {
-		Test_Mempool(t)
-		time.Sleep(30 * time.Second)
-	}
-}
+//func Test_RunTestMempoolInloop(t *testing.T) {
+//	for {
+//		Test_Mempool(t)
+//		time.Sleep(30 * time.Second)
+//	}
+//}
 
 func Test_Mempool(t *testing.T) {
 	client := create_test_client()
