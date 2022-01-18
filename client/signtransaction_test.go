@@ -18,13 +18,10 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/common"
-	contract2 "github.com/elastos/Elastos.ELA/core/contract"
-	"github.com/elastos/Elastos.ELA/core/contract/program"
 	elatypes "github.com/elastos/Elastos.ELA/core/types"
 )
 
@@ -53,25 +50,11 @@ func Test_signTransaction(t *testing.T) {
 		return
 	}
 
-	redeemScript, err := contract2.CreateStandardRedeemScript(act.GetMainAccount().PublicKey)
-	if err != nil {
-		log.Printf("pubkey to code err: %s\n", err.Error())
-		return
-	}
-	txn.Programs = []*program.Program{
-		&program.Program{
-			Code:      redeemScript,
-			Parameter: nil,
-		},
-	}
-
-	tx, err := act.Sign(&txn)
+	signature, err := act.GetMainAccount().Sign(txUnsignedBytes)
 	if err != nil {
 		fmt.Println("sign err :", err)
 		return
 	}
 
-	for i, p := range tx.Programs {
-		fmt.Println("signature[", i, "]:", common.BytesToHexString(p.Parameter))
-	}
+	fmt.Println("signature:", common.BytesToHexString(signature))
 }
