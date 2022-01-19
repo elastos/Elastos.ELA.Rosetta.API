@@ -56,13 +56,13 @@ var (
 	TransactionNotExist = &types.Error{
 		Code:      TransactionNotExistError,
 		Message:   "failed to get transaction by rpc",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	ReferTransactionNotExist = &types.Error{
 		Code:      ReferTransactionNotExistError,
 		Message:   "failed to get transaction reference by rpc",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	GetCurrentBlockFailed = &types.Error{

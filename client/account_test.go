@@ -22,7 +22,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func skipShort(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
+}
 func Test_account(t *testing.T) {
+	skipShort(t)
 	client := create_test_client()
 	ctx := context()
 	if primaryNetwork == nil || networkStatus == nil || networkOptions == nil {
