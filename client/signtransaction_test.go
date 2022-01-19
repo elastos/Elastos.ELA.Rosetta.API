@@ -26,6 +26,7 @@ import (
 )
 
 func Test_signTransaction(t *testing.T) {
+	skipShort(t)
 	walletPath := "/Users/github.com/elastos/Elastos.ELA.Rosetta.API/keystore.dat"
 	password := "123"
 	// from /construction/payloads
