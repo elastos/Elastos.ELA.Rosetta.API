@@ -78,6 +78,10 @@ func (s *MempoolAPIService) MempoolTransaction(
 		return nil, errors.GetMempoolFailed
 	}
 
+	if request.TransactionIdentifier == nil {
+		return nil, errors.NoTransactionIdentifier
+	}
+
 	for _, tx := range txContextInfo {
 		if tx.Hash == request.TransactionIdentifier.Hash {
 			rstx, e := GetRosettaTransactionByTxInfo(tx.TransactionInfo, &base.MainnetDefaultStatus)

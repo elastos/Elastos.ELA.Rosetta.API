@@ -38,6 +38,7 @@ const (
 	DeserializeTransactionError
 	DecodePublicKeyError
 	SignatureTypeError
+	InvalidSignatureError
 	PublishTransactionError
 	InvalidCoinChangeError
 	InvalidCoinChangeActionError
@@ -50,6 +51,8 @@ const (
 	NetworkIdentifierError
 	InvalidTransactionHashError
 	InvalidIncludeMempoolError
+	NoBlockIdentifierError
+	NoTransactionIdentifierError
 )
 
 var (
@@ -179,6 +182,11 @@ var (
 		Retriable: false,
 	}
 
+	InvalidSignature = &types.Error{
+		Code:      InvalidSignatureError,
+		Message:   "invalid signature",
+		Retriable: false,
+	}
 	PublishTransactionFailed = &types.Error{
 		Code:      PublishTransactionError,
 		Message:   "publish tx failed",
@@ -230,10 +238,19 @@ var (
 		Message:   "invalid transaction hash",
 		Retriable: false,
 	}
-
 	InvalidIncludeMempool = &types.Error{
 		Code:      InvalidIncludeMempoolError,
 		Message:   "account/coins should set include_mempool to false",
+		Retriable: false,
+	}
+	NoBlockIdentifier = &types.Error{
+		Code:      NoBlockIdentifierError,
+		Message:   "block identifier is null",
+		Retriable: false,
+	}
+	NoTransactionIdentifier = &types.Error{
+		Code:      NoTransactionIdentifierError,
+		Message:   "transaction identifier is null",
 		Retriable: false,
 	}
 )
@@ -258,6 +275,7 @@ var APIErrorMap = []*types.Error{
 	DecodeTransactionFailed,
 	DecodePublicKeyFailed,
 	InvalidSignatureType,
+	InvalidSignature,
 	PublishTransactionFailed,
 	InvalidCoinChange,
 	InvalidCoinChangeAction,
@@ -269,4 +287,5 @@ var APIErrorMap = []*types.Error{
 	InvalidAccountIdentifier,
 	InvalidTransactionHash,
 	InvalidIncludeMempool,
+	NoBlockIdentifier,
 }
