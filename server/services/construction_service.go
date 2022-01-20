@@ -27,15 +27,16 @@ import (
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
-	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
+
 	"github.com/elastos/Elastos.ELA/common"
 	config2 "github.com/elastos/Elastos.ELA/common/config"
 	contract2 "github.com/elastos/Elastos.ELA/core/contract"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	elatypes "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 )

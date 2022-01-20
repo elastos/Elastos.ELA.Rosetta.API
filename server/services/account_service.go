@@ -22,10 +22,11 @@ import (
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/config"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/errors"
 	"github.com/elastos/Elastos.ELA.Rosetta.API/common/rpc"
-	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
+
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 // AccountAPIService implements the server.AccountAPIServicer interface.
