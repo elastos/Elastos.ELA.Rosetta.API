@@ -50,7 +50,8 @@ func GetCoinIdentifierByHashStr(hash string, index uint16) string {
 }
 
 func CheckNetwork(network *types.NetworkIdentifier) bool {
-	if network.Blockchain == base.BlockChainName && network.Network == config.Parameters.ActiveNet {
+	if network != nil && network.Blockchain == base.BlockChainName &&
+		network.Network == config.Parameters.ActiveNet {
 		return true
 	}
 

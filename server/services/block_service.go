@@ -49,6 +49,10 @@ func (s *BlockAPIService) Block(
 		return nil, errors.UnsupportNetwork
 	}
 
+	if request.BlockIdentifier == nil {
+		return nil, errors.NoBlockIdentifier
+	}
+
 	var block *base.BlockInfo
 	if request.BlockIdentifier.Index != nil {
 		var err error
@@ -93,6 +97,10 @@ func (s *BlockAPIService) BlockTransaction(
 	if !CheckNetwork(request.NetworkIdentifier) {
 		log.Printf("unsupport network")
 		return nil, errors.UnsupportNetwork
+	}
+
+	if request.TransactionIdentifier == nil {
+		return nil, errors.NoTransactionIdentifier
 	}
 
 	tx, err := rpc.GetTransaction(request.TransactionIdentifier.Hash, config.Parameters.MainNodeRPC)

@@ -75,6 +75,10 @@ func (s *ConstructionAPIServicer) ConstructionCombine(
 	}
 
 	for _, sign := range request.Signatures {
+		if sign == nil {
+			log.Println("signature is null")
+			return nil, errors.InvalidSignature
+		}
 		if err := checkCurveType(sign.PublicKey.CurveType); err != nil {
 			log.Printf("invalid curve type")
 			return nil, err
@@ -122,6 +126,10 @@ func (s *ConstructionAPIServicer) ConstructionDerive(
 	if !CheckNetwork(request.NetworkIdentifier) {
 		log.Printf("unsupport network")
 		return nil, errors.UnsupportNetwork
+	}
+
+	if request.PublicKey == nil {
+		return nil, errors.InvalidPublicKey
 	}
 
 	if err := checkCurveType(request.PublicKey.CurveType); err != nil {
